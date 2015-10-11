@@ -86,24 +86,38 @@ void startup(void){
     draw_centred(10, "Assignment 2");
     draw_centred(20, "Luke Josh");
     draw_centred(30, "N9155554");
-    draw_centred(40, "Press a button to continue");
+    draw_centred(40, "Press to cont.");
     show_screen();
-    wait_for_button(2);
+    wait_for_button1();
     clear_screen();
+    send_debug_string("startup finished");
 }
 
 void menu(void){
+    int cur_selected;
+
+    send_debug_string("menu starting");
     int selected = 0;
-    draw_string(0, 0, "Please select a level");
-    draw_string(0, 0, "Level 1");
-    draw_string(0, 15, "Level 2");
-    draw_string(0, 30, "Level 3");
+    draw_menu(cur_selected);
     show_screen();
-    wait_for_button(2);
+
     while(!selected){
-
+        int button = wait_for_any_button();
+        if(button == 2){
+            clear_screen();
+            cur_selected++;
+            if(cur_selected == 4){
+                cur_selected = 1;
+            }
+            draw_menu(cur_selected);
+            show_screen();
+        }
+        else if(button == 1){
+            send_debug_string("load level");
+            selected = 1;
+        }
     }
-
+    send_debug_string("menu finished!");
 }
 
 int main(void){

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -85,6 +86,12 @@ void init_hardware(void){
     LCDInitialise(LCD_DEFAULT_CONTRAST);
     usb_init();
     sei();
+    TCCR1B &= ~((1<<WGM13));
+    TCCR1B &= ~((1<<WGM12));
+    TCCR1A &= ~((1<<WGM11));
+    TCCR1A &= ~((1<<WGM10));
+    TCCR1B |= ((1 << CS12) | (1 << CS10));
+    TCCR1B &= ~(1 << CS11);
 }
 
 void usb_wait(void){
@@ -106,12 +113,37 @@ void draw_menu(int cur_selection){
 }
 
 void draw_status(int level, int score){
-    char level_string[3];
-    char score_string[5];
+    char level_string[4];
+    char score_string[6];
 
     sprintf(level_string, "L: %d", level);
     sprintf(score_string, "S: %d", score);
 
     draw_string(0, 0, level_string);
-    draw_string(25, 0, score_string);
+    draw_string(50, 0, score_string);
+    draw_line(0, 9, 83, 9);
+}
+
+int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
+    int sprite1_left = sprite1.x - sprite1.width/2;
+    int sprite1_right = sprite1.x + sprite1.width/2;
+    int sprite2_left = sprite2.x - sprite2.width/2;
+    int sprite2_right = sprite2.x + sprite2.width/2;
+    int sprite3_left = sprite3.x - sprite3.width/2;
+    int sprite3_right = sprite3.x + sprite3.width/2;
+
+    if ((sprite1_left + 5 >= sprite2_left && sprite1_left - 5 <= sprite2_right)||
+        (sprite1_left + 5 >= sprite3_left && sprite1_left - 5 <= sprite3_right)||
+        (sprite2_left + 5 >= sprite1_left && sprite2_left - 5 <= sprite1_right)||
+        (sprite2_left + 5 >= sprite3_left && sprite2_left - 5 <= sprite3_right)||
+        (sprite3_left + 5 >= sprite2_left && sprite3_left - 5 <= sprite2_right)||
+        (sprite3_left + 5 >= sprite1_left && sprite3_left - 5 <= sprite1_right)
+        ){
+        send_debug_string("not valid");
+        return 0;
+    }
+    else{
+        send_debug_string("valid!");
+        return 1;
+    }
 }

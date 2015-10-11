@@ -8,3 +8,4 @@ void init_hardware(void);
 void usb_wait(void);
 void draw_menu(int cur_selection);
 void draw_status(int level, int score);
+int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);

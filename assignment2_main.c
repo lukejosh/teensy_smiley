@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -80,6 +81,80 @@ unsigned char silly_bm[32] = {
     0b00000111, 0b11100000
 };
 
+int level;
+int lives = 3;
+int score = 20;
+
+void level1(void);
+void level2(void);
+void level3(void);
+void to_level(int level);
+
+void level1(void){
+    Sprite happy;
+    Sprite angry;
+    Sprite silly;
+
+    clear_screen();
+
+    srand(TCNT1);
+
+    init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
+    init_sprite(&angry, rand() % 70, 10, 16, 16, angry_bm);
+    init_sprite(&silly, rand() % 70, 10, 16, 16, silly_bm);
+
+    int valid = check_valid_faces(happy, angry, silly);
+
+    while(!valid){
+        happy.x = rand() % 70;
+        angry.x = rand() % 70;
+        silly.x = rand() % 70;
+        valid = check_valid_faces(happy, angry, silly);
+    }
+
+    draw_sprite(&happy);
+    draw_sprite(&silly);
+    draw_sprite(&angry);
+
+    send_debug_string("level 1");
+    
+    level = 1;
+    draw_status(level, score);
+    show_screen();
+}
+
+void level2(void){
+    send_debug_string("level 2");
+    clear_screen();
+    level = 2;
+    draw_status(level, score);
+    show_screen();
+}
+
+void level3(void){
+    send_debug_string("level 3");
+    clear_screen();
+    level = 3;
+    draw_status(level, score);
+    show_screen();
+}
+
+void to_level(int level){
+    switch(level){
+        case 1:
+            level1();
+            break;
+
+        case 2:
+            level2();
+            break;
+
+        case 3:
+            level3();
+            break;
+    }
+}
+
 void startup(void){
     clear_screen();
     draw_centred(0, "CAB202");
@@ -118,6 +193,7 @@ void menu(void){
         }
     }
     send_debug_string("menu finished!");
+    to_level(cur_selected);
 }
 
 int main(void){
@@ -125,6 +201,5 @@ int main(void){
     usb_wait();
     startup();
     menu();
-    show_screen();
     return 0;
 }

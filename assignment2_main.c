@@ -106,6 +106,7 @@ void to_level(int level);
 
 void level1(void){
     init_timer3();
+    init_right_interrupt();
     clear_screen();
     srand(TCNT1);
     init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
@@ -246,4 +247,11 @@ ISR(TIMER3_COMPA_vect){
     draw_sprite(&character);
     draw_status(level, score);
     show_screen();
+}
+
+ISR(INT0_vect){
+    while(PINB & 0b00000001);
+    if(character.x < 76){
+        character.x++;
+    }
 }

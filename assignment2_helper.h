@@ -13,3 +13,4 @@ void draw_status(int level, int score);
 int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
 void init_timer3();
 void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
+void init_right_interrupt(void);

@@ -11,11 +11,9 @@
 #include "assignment2_helper.h"
 
 #define FREQUENCY 8000000.0
-#define PRESCALER_0 1024.0
-#define PRESCALER_1 1024.0
 /*
 RIGHT BUTTON: F5
-LEFT  BUTTON: F6
+LEFT  BUTTON: F6m
 SWITCH THING: 
 SCREEN      :
 POTEN 1     :
@@ -81,9 +79,25 @@ unsigned char silly_bm[32] = {
     0b00000111, 0b11100000
 };
 
+unsigned char character_bm[8] = {
+    0b00111100,
+    0b01000010,
+    0b10101001,
+    0b10101001,
+    0b10000101,
+    0b10111001,
+    0b01000010,
+    0b00111100
+};
+
+Sprite happy;
+Sprite angry;
+Sprite silly;
+Sprite character;
 int level;
 int lives = 3;
-int score = 20;
+int score = 0;
+int speed = 0; //in ticks!
 
 void level1(void);
 void level2(void);
@@ -91,36 +105,34 @@ void level3(void);
 void to_level(int level);
 
 void level1(void){
-    Sprite happy;
-    Sprite angry;
-    Sprite silly;
-
+    init_timer3();
     clear_screen();
-
     srand(TCNT1);
-
     init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
     init_sprite(&angry, rand() % 70, 10, 16, 16, angry_bm);
     init_sprite(&silly, rand() % 70, 10, 16, 16, silly_bm);
+    init_sprite(&character, 42, 40, 8, 8, character_bm);
 
     int valid = check_valid_faces(happy, angry, silly);
-
     while(!valid){
         happy.x = rand() % 70;
         angry.x = rand() % 70;
         silly.x = rand() % 70;
         valid = check_valid_faces(happy, angry, silly);
     }
-
     draw_sprite(&happy);
     draw_sprite(&silly);
     draw_sprite(&angry);
-
-    send_debug_string("level 1");
-    
+    draw_sprite(&character);
     level = 1;
     draw_status(level, score);
     show_screen();
+
+    while(lives != 0 || score != 20){
+        //move sprites
+        //check for collisions | wraparounds
+        //send_debug_string("reduce 1");
+    }
 }
 
 void level2(void){
@@ -202,4 +214,36 @@ int main(void){
     startup();
     menu();
     return 0;
+}
+
+ISR(TIMER3_COMPA_vect){
+    clear_screen();
+    send_debug_string("interrupt fam");
+    happy.y = happy.y + 1;
+    angry.y = angry.y + 1;
+    silly.y = silly.y + 1;
+    if (happy.y == 48){
+        happy.y = 10;
+        angry.y = 10;
+        silly.y = 10;
+
+        happy.x = rand() % 70;
+        angry.x = rand() % 70;
+        silly.x = rand() % 70;
+
+        int valid = check_valid_faces(happy, angry, silly);
+
+        while(!valid){
+            happy.x = rand() % 70;
+            angry.x = rand() % 70;
+            silly.x = rand() % 70;
+            valid = check_valid_faces(happy, angry, silly);
+        }
+    }
+    draw_sprite(&happy);
+    draw_sprite(&angry);
+    draw_sprite(&silly);
+    draw_sprite(&character);
+    draw_status(level, score);
+    show_screen();
 }

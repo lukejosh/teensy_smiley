@@ -112,6 +112,11 @@ void init_right_interrupt(void){
     EIMSK = (1 << INT0);
 }
 
+void init_left_interrupt(void){
+    PCICR = (1 << PCIE0);
+    PCMSK0 = (1 << PCINT1);
+}
+
 void usb_wait(void){
     draw_string(0, 0, "pls connect");
     show_screen();
@@ -175,6 +180,46 @@ void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
     }
     if (sprite3.y == 40){
         sprite3.y = 10;
+    }
+}
+
+int isCollision(Sprite sprite1, Sprite sprite2){
+    int sprite1_left = sprite1.x - sprite1.width/2;
+    int sprite1_right = sprite1.x + sprite1.width/2;
+    int sprite1_top = sprite1.y - sprite1.height/2;
+    int sprite1_bottom = sprite1.y + sprite1.height/2;
+
+    int sprite2_left = sprite2.x - sprite2.width/2;
+    int sprite2_right = sprite2.x + sprite2.width/2;
+    int sprite2_top = sprite2.y - sprite2.height/2;
+    int sprite2_bottom = sprite2.y + sprite2.height/2;
+
+    if((sprite1_left >= sprite2_left & sprite1_left <= sprite2_right)||
+       (sprite1_top >= sprite2_top & sprite1_top <= sprite2_bottom)  ||
+       (sprite2_left >= sprite1_left & sprite2_left <= sprite1_right)||
+       (sprite2_top >= sprite1_top & sprite2_top <= sprite1_bottom)){
+        return 1;
+    }
+
+    else{
+        return 0;
+    }
+}
+
+int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly){
+    if(isCollision(character, happy) == 1){
+        return 1;
+    }
+    else if (isCollision(character, angry) == 1){
+        return 2;
+    }
+
+    else if (isCollision(character, silly) == 1){
+        return 3;
+    }
+
+    else{
+        return 0;
     }
 }
 

@@ -107,6 +107,7 @@ void to_level(int level);
 void level1(void){
     init_timer3();
     init_right_interrupt();
+    init_left_interrupt();
     clear_screen();
     srand(TCNT1);
     init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
@@ -219,7 +220,6 @@ int main(void){
 
 ISR(TIMER3_COMPA_vect){
     clear_screen();
-    send_debug_string("interrupt fam");
     happy.y = happy.y + 1;
     angry.y = angry.y + 1;
     silly.y = silly.y + 1;
@@ -241,17 +241,34 @@ ISR(TIMER3_COMPA_vect){
             valid = check_valid_faces(happy, angry, silly);
         }
     }
+
+    char buff[5];
+    int coll = check_collisions(character, happy, angry, silly);
+    sprintf(buff, "%d", coll);
+    send_debug_string(buff);
+
     draw_sprite(&happy);
     draw_sprite(&angry);
     draw_sprite(&silly);
     draw_sprite(&character);
     draw_status(level, score);
-    show_screen();
+    show_screen();//screen refresh timer
 }
 
-ISR(INT0_vect){
-    while(PINB & 0b00000001);
+ISR(INT0_vect){ //right dpad
+    //while(PINB & 0b00000001);
     if(character.x < 76){
+        send_debug_string("RIGHT");
         character.x++;
+    }
+}
+
+ISR(PCINT0_vect){
+    if (PINB & 0b00000010){
+        send_debug_string("LEFT");
+        //while(PINB & 0b00000010);
+        if(character.x > 0){
+            character.x--;
+        }
     }
 }

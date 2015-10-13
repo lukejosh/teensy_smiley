@@ -14,3 +14,6 @@ int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
 void init_timer3();
 void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
 void init_right_interrupt(void);
+void init_left_interrupt(void);
+int isCollision(Sprite sprite1, Sprite sprite2);
+int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly);

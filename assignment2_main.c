@@ -244,7 +244,7 @@ ISR(TIMER3_COMPA_vect){
 
     char buff[5];
     int coll = check_collisions(character, happy, angry, silly);
-    sprintf(buff, "%d", coll);
+    sprintf(buff, "C: %d", coll);
     send_debug_string(buff);
 
     draw_sprite(&happy);

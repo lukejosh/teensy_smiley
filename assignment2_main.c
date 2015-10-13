@@ -97,7 +97,7 @@ Sprite character;
 int level;
 int lives = 3;
 int score = 0;
-int speed = 0; //in ticks!
+int speed = 0; 
 
 void level1(void);
 void level2(void);
@@ -105,7 +105,7 @@ void level3(void);
 void to_level(int level);
 
 void level1(void){
-    init_timer3();
+    init_timer3(2500);
     init_right_interrupt();
     init_left_interrupt();
     clear_screen();
@@ -127,7 +127,7 @@ void level1(void){
     draw_sprite(&angry);
     draw_sprite(&character);
     level = 1;
-    draw_status(level, score);
+    draw_status(level, 10);
     show_screen();
 
     while(lives != 0 || score != 20){
@@ -218,15 +218,19 @@ int main(void){
     return 0;
 }
 
-ISR(TIMER3_COMPA_vect){
+ISR(TIMER3_COMPA_vect){//screen refresh timer
     clear_screen();
-    happy.y = happy.y + 1;
-    angry.y = angry.y + 1;
-    silly.y = silly.y + 1;
-    if (happy.y == 48){
+    happy.y = happy.y + 2;
+    angry.y = angry.y + 2;
+    silly.y = silly.y + 2;
+    if (happy.y >= 48){
         happy.y = 10;
         angry.y = 10;
         silly.y = 10;
+
+        happy.is_visible = 1;
+        angry.is_visible = 1;
+        silly.is_visible = 1;
 
         happy.x = rand() % 70;
         angry.x = rand() % 70;
@@ -244,31 +248,58 @@ ISR(TIMER3_COMPA_vect){
 
     char buff[5];
     int coll = check_collisions(character, happy, angry, silly);
-    sprintf(buff, "C: %d", coll);
-    send_debug_string(buff);
+
+    if (coll == 1){
+        score += 2;
+        happy.is_visible = 0;
+    }
+
+    else if (coll == 2){
+        lives -= 1;
+        angry.is_visible = 0;
+    }
+
+    else if (coll == 3){
+        speed++;
+        if (speed == 4){
+            speed = 1;
+        }
+
+        if(speed == 1){
+            init_timer3(2500);
+        }
+        else if (speed == 2){
+            init_timer3(1750);
+        }
+        else if (speed ==  3){
+            init_timer3(600);
+        }
+
+        silly.is_visible = 0;
+    }
 
     draw_sprite(&happy);
     draw_sprite(&angry);
     draw_sprite(&silly);
     draw_sprite(&character);
     draw_status(level, score);
-    show_screen();//screen refresh timer
+    show_screen();
 }
 
 ISR(INT0_vect){ //right dpad
     //while(PINB & 0b00000001);
     if(character.x < 76){
         send_debug_string("RIGHT");
-        character.x++;
+        character.x+=2;
     }
 }
 
-ISR(PCINT0_vect){
+ISR(PCINT0_vect){//left dpad
     if (PINB & 0b00000010){
         send_debug_string("LEFT");
         //while(PINB & 0b00000010);
         if(character.x > 0){
-            character.x--;
+            character.x-=2;
         }
-    }
+    } 
 }

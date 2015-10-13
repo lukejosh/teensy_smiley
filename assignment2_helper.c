@@ -100,11 +100,22 @@ void init_hardware(void){
     //TCCR3B = (1 << CS32) | (1 << CS30);
 }
 
-void init_timer3(void){
+void init_timer3(int speed){
     TCCR3B = (1 << WGM32);
-    OCR3A = 1500;
+    OCR3A = speed;
     TIMSK3 = (1 << OCIE3A);
     TCCR3B |= (1 << CS32) | (1 << CS30);
+}
+
+void set_fall_speed(int speed){
+    if(speed == 1){
+        OCR3A = 2500;
+    }
+    else if (speed == 2){
+        OCR3A = 2000;
+    }
+    else if(speed == 3)
+        OCR3A = 1500;
 }
 
 void init_right_interrupt(void){
@@ -184,10 +195,9 @@ void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
 }
 
 int isCollision(Sprite sprite1, Sprite sprite2){
-    if(((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
+    if ((sprite1.is_visible && sprite2.is_visible)&&
+       ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
        ((sprite1.y + sprite1.height) > (sprite2.y)) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
-
-
        ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width)&&
        ((sprite2.y + sprite2.height) > (sprite1.y)) && ((sprite2.y) < (sprite1.y + sprite1.height)))){
         return 1;

@@ -184,34 +184,12 @@ void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
 }
 
 int isCollision(Sprite sprite1, Sprite sprite2){
-    // int sprite1_left = sprite1.x - sprite1.width/2;
-    // int sprite1_right = sprite1.x + sprite1.width/2;
-    // int sprite1_top = sprite1.y - sprite1.height/2;
-    // int sprite1_bottom = sprite1.y + sprite1.height/2;
-
-    // int sprite2_left = sprite2.x - sprite2.width/2;
-    // int sprite2_right = sprite2.x + sprite2.width/2;
-    // int sprite2_top = sprite2.y - sprite2.height/2;
-    // int sprite2_bottom = sprite2.y + sprite2.height/2;
-
-    // if((sprite1_left >= sprite2_left && sprite1_left <= sprite2_right)&&
-    //    (sprite1_top >= sprite2_top && sprite1_top <= sprite2_bottom)  ||
-
-
-    //    (sprite2_left >= sprite1_left && sprite2_left <= sprite1_right)&&
-    //    (sprite2_top >= sprite1_top && sprite2_top <= sprite1_bottom)){
-    //     return 1;
-    // }
-
-    // else{
-    //     return 0;
-    // }
     if(((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
-       (sprite1.y >= sprite2.y && sprite1.y <= sprite2.y + sprite2.height))||
+       ((sprite1.y + sprite1.height) > (sprite2.y)) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
 
 
        ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width)&&
-       (sprite2.y >= sprite1.y && sprite2.y <= sprite1.y + sprite1.height))){
+       ((sprite2.y + sprite2.height) > (sprite1.y)) && ((sprite2.y) < (sprite1.y + sprite1.height)))){
         return 1;
     }
 
@@ -236,14 +214,6 @@ int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly)
         return 0;
     }
 }
-//     int collision = 0;
-
-//     collision = isCollision(character, happy);
-//     collision = collision || isCollision(character, angry);
-//     collision = collision || isCollision(character, silly);
-
-//     return collision;
-// }
 
 // void init_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
 //     init_sprite(sprite1, rand(), 10, 16, 16, happy_bm);

@@ -11,6 +11,78 @@
 #include "sprite.h"
 #include "assignment2_helper.h"
 
+unsigned char happy_bm[32] = {
+    0b00000111, 0b11100000,
+    0b00011000, 0b00011000,
+    0b00100000, 0b00000100,
+    0b01000000, 0b00000010,
+    0b01011000, 0b00011010,
+    0b10011000, 0b00011001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10010000, 0b00001001,
+    0b10010000, 0b00001001,
+    0b10001000, 0b00010001,
+    0b01000111, 0b11100010,
+    0b01000000, 0b00000010,
+    0b00100000, 0b00000100,
+    0b00011000, 0b00011000,
+    0b00000111, 0b11100000
+};
+
+unsigned char angry_bm[32] = {
+    0b00000111, 0b11100000,
+    0b00011000, 0b00011000,
+    0b00100000, 0b00000100,
+    0b01000000, 0b00000010,
+    0b01000000, 0b00000010,
+    0b10001000, 0b00010001,
+    0b10000100, 0b00100001,
+    0b10000010, 0b01000001,
+    0b10000000, 0b00000001,
+    0b10000011, 0b11000001,
+    0b10000100, 0b00100001,
+    0b01001000, 0b00010010,
+    0b01000000, 0b00000010,
+    0b00100000, 0b00000100,
+    0b00011000, 0b00011000,
+    0b00000111, 0b11100000
+};
+
+unsigned char silly_bm[32] = {
+    0b00000111, 0b11100000,
+    0b00011000, 0b00011000,
+    0b00100000, 0b00000100,
+    0b01000000, 0b00000010,
+    0b01000000, 0b00000010,
+    0b10011000, 0b00000001,
+    0b10011000, 0b00000001,
+    0b10000000, 0b00011001,
+    0b10000000, 0b00011001,
+    0b10000000, 0b00000001,
+    0b10000011, 0b11110001,
+    0b01000000, 0b11000010,
+    0b01000000, 0b00000010,
+    0b00100000, 0b00000100,
+    0b00011000, 0b00011000,
+    0b00000111, 0b11100000
+};
+
+unsigned char character_bm[8] = {
+    0b00111100,
+    0b01000010,
+    0b10101001,
+    0b10101001,
+    0b10000101,
+    0b10111001,
+    0b01000010,
+    0b00111100
+};
+
+Sprite happy;
+Sprite angry;
+Sprite silly;
+
 void menu(void);
 
 void draw_centred(unsigned char y, char* string) {
@@ -111,8 +183,8 @@ void init_timer3(int speed){
 }
 
 void turnoff_timer3(void){
-    TCCR3B &= ~(1 << WGM32); 
-    TIMSK3 &= ~(1 << OCIE3A);
+    TCCR3B &= ~(1 << CS32);
+    TCCR3B &= ~(1 << CS30);
 }
 
 void turnoff_all_interrupts(void){
@@ -296,5 +368,28 @@ void end_level(void){
     }
 
     show_screen();
+}
 
+void init_all_sprites(void){
+    init_sprite(&happy, rand() % 67, 10, 16, 16, happy_bm);
+    init_sprite(&angry, rand() % 67, 10, 16, 16, angry_bm);
+    init_sprite(&silly, rand() % 67, 10, 16, 16, silly_bm);
+    init_sprite(&character, 42, 40, 8, 8, character_bm);
+}
+
+void make_enemies_valid(void){
+    int valid = check_valid_faces(happy, angry, silly);
+    while(!valid){
+        happy.x = rand() % 67;
+        angry.x = rand() % 67;
+        silly.x = rand() % 67;
+        valid = check_valid_faces(happy, angry, silly);
+    }
+}
+
+void draw_all_sprites(void){
+    draw_sprite(&happy);
+    draw_sprite(&silly);
+    draw_sprite(&angry);
+    draw_sprite(&character);
 }

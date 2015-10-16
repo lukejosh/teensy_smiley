@@ -28,74 +28,6 @@ volatile int score;
 volatile int speed;
 volatile int level;
 
-unsigned char happy_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01011000, 0b00011010,
-    0b10011000, 0b00011001,
-    0b10000000, 0b00000001,
-    0b10000000, 0b00000001,
-    0b10010000, 0b00001001,
-    0b10010000, 0b00001001,
-    0b10001000, 0b00010001,
-    0b01000111, 0b11100010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
-};
-
-unsigned char angry_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01000000, 0b00000010,
-    0b10001000, 0b00010001,
-    0b10000100, 0b00100001,
-    0b10000010, 0b01000001,
-    0b10000000, 0b00000001,
-    0b10000011, 0b11000001,
-    0b10000100, 0b00100001,
-    0b01001000, 0b00010010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
-};
-
-unsigned char silly_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01000000, 0b00000010,
-    0b10011000, 0b00000001,
-    0b10011000, 0b00000001,
-    0b10000000, 0b00011001,
-    0b10000000, 0b00011001,
-    0b10000000, 0b00000001,
-    0b10000011, 0b11110001,
-    0b01000000, 0b11000010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
-};
-
-unsigned char character_bm[8] = {
-    0b00111100,
-    0b01000010,
-    0b10101001,
-    0b10101001,
-    0b10000101,
-    0b10111001,
-    0b01000010,
-    0b00111100
-};
-
 Sprite happy;
 Sprite angry;
 Sprite silly;
@@ -118,22 +50,11 @@ void level1(void){
     init_left_interrupt();
     clear_screen();
     srand(TCNT1);
-    init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
-    init_sprite(&angry, rand() % 70, 10, 16, 16, angry_bm);
-    init_sprite(&silly, rand() % 70, 10, 16, 16, silly_bm);
-    init_sprite(&character, 42, 40, 8, 8, character_bm);
 
-    int valid = check_valid_faces(happy, angry, silly);
-    while(!valid){
-        happy.x = rand() % 70;
-        angry.x = rand() % 70;
-        silly.x = rand() % 70;
-        valid = check_valid_faces(happy, angry, silly);
-    }
-    draw_sprite(&happy);
-    draw_sprite(&silly);
-    draw_sprite(&angry);
-    draw_sprite(&character);
+    init_all_sprites();
+    make_enemies_valid();
+    draw_all_sprites();
+
     level = 1;
     draw_status(lives, score);
     show_screen();
@@ -147,32 +68,21 @@ void level2(void){
     score = 0;
     lives = 3;
     level = 2;
+    send_debug_string("starting timer");
+    init_timer3(2500);
+    send_debug_string("starting while");
     init_poten();
     send_debug_string("level 2");
-    init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
-    init_sprite(&angry, rand() % 70, 10, 16, 16, angry_bm);
-    init_sprite(&silly, rand() % 70, 10, 16, 16, silly_bm);
-    init_sprite(&character, 42, 40, 8, 8, character_bm);
+    init_all_sprites();
     int valid = check_valid_faces(happy, angry, silly);
     while(!valid){
-        happy.x = rand() % 70;
-        angry.x = rand() % 70;
-        silly.x = rand() % 70;
+        happy.x = rand() % 67;
+        angry.x = rand() % 67;
+        silly.x = rand() % 67;
         valid = check_valid_faces(happy, angry, silly);
     }
-    init_timer3(2500);
     while(continue_level);
-    turnoff_all_interrupts();
-    send_debug_string("out of loop");
-    clear_screen();
-    draw_centred(10, "Game over! :(");
-    draw_centred(20, "Play again?");
-    draw_string(0, 40, "Y");
-    draw_string(75, 40, "N");
-    show_screen();
-
-    int continue_selection = wait_for_any_button();
-    send_debug_string("passed wait!");
+    end_level();
 }
 
 void level3(void){
@@ -260,6 +170,7 @@ int main(void){
 }
 
 ISR(TIMER3_COMPA_vect){//screen refresh timer
+    send_debug_string("interrupt brah");
     happy.y = happy.y + 2;
     angry.y = angry.y + 2;
     silly.y = silly.y + 2;
@@ -272,16 +183,16 @@ ISR(TIMER3_COMPA_vect){//screen refresh timer
         angry.is_visible = 1;
         silly.is_visible = 1;
 
-        happy.x = rand() % 70;
-        angry.x = rand() % 70;
-        silly.x = rand() % 70;
+        happy.x = rand() % 67;
+        angry.x = rand() % 67;
+        silly.x = rand() % 67;
 
         int valid = check_valid_faces(happy, angry, silly);
 
         while(!valid){
-            happy.x = rand() % 70;
-            angry.x = rand() % 70;
-            silly.x = rand() % 70;
+            happy.x = rand() % 67;
+            angry.x = rand() % 67;
+            silly.x = rand() % 67;
             valid = check_valid_faces(happy, angry, silly);
         }
     }
@@ -335,10 +246,7 @@ ISR(TIMER3_COMPA_vect){//screen refresh timer
     }
 
     clear_screen();
-    draw_sprite(&happy);
-    draw_sprite(&angry);
-    draw_sprite(&silly);
-    draw_sprite(&character);
+    draw_all_sprites();
     draw_status(lives, score);
     show_screen();
 

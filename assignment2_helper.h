@@ -2,6 +2,10 @@ extern volatile int lives;
 extern volatile int score;
 extern volatile int speed;
 extern volatile int level;
+extern Sprite happy;
+extern Sprite angry;
+extern Sprite silly;
+extern Sprite character;
 
 void draw_centred(unsigned char y, char* string);
 void wait_for_button1(void);
@@ -29,3 +33,6 @@ uint16_t adc_read(uint8_t ch);
 int get_x_position_from_poten(uint16_t poten);
 void init_level(int l);
 void end_level(void);
+void init_all_sprites(void);
+void make_enemies_valid(void);
+void draw_all_sprites(void);

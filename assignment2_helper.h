@@ -1,3 +1,8 @@
+extern volatile int lives;
+extern volatile int score;
+extern volatile int speed;
+extern volatile int level;
+
 void draw_centred(unsigned char y, char* string);
 void wait_for_button1(void);
 void wait_for_button2(void);
@@ -22,3 +27,5 @@ void init_poten(void);
 void turn_poten_off(void);
 uint16_t adc_read(uint8_t ch);
 int get_x_position_from_poten(uint16_t poten);
+void init_level(int l);
+void end_level(void);

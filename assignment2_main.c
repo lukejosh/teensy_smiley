@@ -23,6 +23,11 @@ LED1        :
 LED2        :
 */
 
+volatile int lives;
+volatile int score;
+volatile int speed;
+volatile int level;
+
 unsigned char happy_bm[32] = {
     0b00000111, 0b11100000,
     0b00011000, 0b00011000,
@@ -95,11 +100,7 @@ Sprite happy;
 Sprite angry;
 Sprite silly;
 Sprite character;
-int level;
-int some_random;
-volatile int lives = 3;
-volatile int score = 0;
-volatile int speed = 0;
+
 volatile int continue_level;
 
 void level1(void);
@@ -110,9 +111,8 @@ void menu(void);
 int main(void);
 
 void level1(void){
+    init_level(1);
     continue_level = 1;
-    lives = 3;
-    score = 0;
     init_timer3(2500);
     init_right_interrupt();
     init_left_interrupt();
@@ -138,37 +138,14 @@ void level1(void){
     draw_status(lives, score);
     show_screen();
 
-    send_debug_string("begin loop");
     while(continue_level);
-
-    turnoff_all_interrupts();
-    send_debug_string("out of loop");
-    clear_screen();
-    draw_centred(10, "Game over! :(");
-    draw_centred(20, "Play again?");
-    draw_string(0, 40, "Y");
-    draw_string(75, 40, "N");
-    show_screen();
-
-    int continue_selection = wait_for_any_button();
-    send_debug_string("passed wait!");
-
-    if (continue_selection == 1){
-        clear_screen();
-        menu();
-    }
-
-    else{
-        clear_screen();
-        draw_centred(20, "Goodbye!");
-        show_screen();
-    }
-
-    show_screen();
+    end_level();
 }
 
 void level2(void){
-    int continue_level = 1;
+    continue_level = 1;
+    score = 0;
+    lives = 3;
     level = 2;
     init_poten();
     send_debug_string("level 2");
@@ -185,6 +162,17 @@ void level2(void){
     }
     init_timer3(2500);
     while(continue_level);
+    turnoff_all_interrupts();
+    send_debug_string("out of loop");
+    clear_screen();
+    draw_centred(10, "Game over! :(");
+    draw_centred(20, "Play again?");
+    draw_string(0, 40, "Y");
+    draw_string(75, 40, "N");
+    show_screen();
+
+    int continue_selection = wait_for_any_button();
+    send_debug_string("passed wait!");
 }
 
 void level3(void){
@@ -255,6 +243,9 @@ void menu(void){
 }
 
 int main(void){
+    lives = 3;
+    score = 0;
+    speed = 0;
     init_hardware();
     usb_wait();
     ADMUX = 0b01000000;

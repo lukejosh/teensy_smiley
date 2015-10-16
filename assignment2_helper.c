@@ -11,6 +11,8 @@
 #include "sprite.h"
 #include "assignment2_helper.h"
 
+void menu(void);
+
 void draw_centred(unsigned char y, char* string) {
     // Draw a string centred in the LCD when you don't know the string length
     unsigned char l = 0, i = 0;
@@ -80,7 +82,7 @@ void send_debug_string(char* string) {
      // Go to a new line (force this to be the start of the line)
      usb_serial_putchar('\r');
      usb_serial_putchar('\n');
- }
+}
 
 void init_hardware(void){
     set_clock_speed(CPU_8MHz);
@@ -249,38 +251,50 @@ void turn_poten_off(void){
     ADCSRA &= ~(1 << ADSC);
 }
 
-uint16_t adc_read(uint8_t ch)
-{
+uint16_t adc_read(uint8_t ch){
     ch &= 0b00000111;
     ADMUX = (ADMUX & 0xF8)|ch;
     ADCSRA |= (1<<ADSC); 
     while(ADCSRA & (1<<ADSC));
 
-    char buff[50];
-    sprintf(buff, "ADC: %d", ADC);
-    send_debug_string(buff);
  
     return (ADC);
 }
 
 int get_x_position_from_poten(uint16_t poten){
-    double dec = poten/1023.0 * 76.0;
-    // char buff[50];
-    // sprintf(buff, "CALCX: %d", round(dec));
-    // send_debug_string(buff);
+    double dec = poten/1023.0 * 76.0;;
     return (round(dec));
 }
 
+void init_level(int l){
+    level = l;
+    score = 0;
+    lives = 3;
 
+    init_timer3(2500);
+}
 
-// void init_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
-//     init_sprite(sprite1, rand(), 10, 16, 16, happy_bm);
-//     init_sprite(sprite2, rand(), 10, 16, 16, angry_bm);
-//     init_sprite(sprite3, rand(), 10, 16, 16, silly_bm);
-// }
+void end_level(void){
+    turnoff_all_interrupts();
+    clear_screen();
+    draw_centred(10, "Game over! :(");
+    draw_centred(20, "Play again?");
+    draw_string(0, 40, "Y");
+    draw_string(75, 40, "N");
+    show_screen();
 
-// void draw_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
-//     draw_sprite(sprite1);
-//     draw_sprite(sprite2);
-//     draw_sprite(sprite3);
-// }
+    int continue_selection = wait_for_any_button();
+    if (continue_selection == 1){
+        clear_screen();
+        menu();
+    }
+
+    else{
+        clear_screen();
+        draw_centred(20, "Goodbye!");
+        show_screen();
+    }
+
+    show_screen();
+
+}

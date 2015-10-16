@@ -42,3 +42,7 @@ int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite, Spri
 void init_all_sprites_level3();
 void interrupt_level12(void);
 void interrupt_level3(void);
+void increment_all_level3(void);
+void level3_collisions(void);
+float rand_dir(void);
+int test_collision(Sprite sprite1, Sprite sprite2);

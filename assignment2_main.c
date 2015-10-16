@@ -79,9 +79,10 @@ void level2(void){
 void level3(void){
     continue_level = 1;
     init_level(3);
-    turnoff_all_interrupts();
-
+    init_timer3(1500);
     init_all_sprites_level3();
+    init_left_interrupt();
+    init_right_interrupt();
     int valid = check_valid_faces_level3(happy, angry, silly, character);
 
     while(!valid){
@@ -91,7 +92,7 @@ void level3(void){
     clear_screen();
     draw_all_sprites();
     show_screen();
-    while(1);
+    while(continue_level);
 }
 
 void to_level(int level){

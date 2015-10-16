@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #include "lcd.h"
 #include "graphics.h"
 #include "cpu_speed.h"
@@ -238,6 +239,39 @@ int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly)
         return 0;
     }
 }
+
+void init_poten(void){
+    ADMUX = (1<<REFS0);
+    ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+}
+
+void turn_poten_off(void){
+    ADCSRA &= ~(1 << ADSC);
+}
+
+uint16_t adc_read(uint8_t ch)
+{
+    ch &= 0b00000111;
+    ADMUX = (ADMUX & 0xF8)|ch;
+    ADCSRA |= (1<<ADSC); 
+    while(ADCSRA & (1<<ADSC));
+
+    char buff[50];
+    sprintf(buff, "ADC: %d", ADC);
+    send_debug_string(buff);
+ 
+    return (ADC);
+}
+
+int get_x_position_from_poten(uint16_t poten){
+    double dec = poten/1023.0 * 76.0;
+    // char buff[50];
+    // sprintf(buff, "CALCX: %d", round(dec));
+    // send_debug_string(buff);
+    return (round(dec));
+}
+
+
 
 // void init_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
 //     init_sprite(sprite1, rand(), 10, 16, 16, happy_bm);

@@ -18,3 +18,7 @@ int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly)
 void set_fall_speed(int speed);
 void turnoff_timer3(void);
 void turnoff_all_interrupts(void);
+void init_poten(void);
+void turn_poten_off(void);
+uint16_t adc_read(uint8_t ch);
+int get_x_position_from_poten(uint16_t poten);

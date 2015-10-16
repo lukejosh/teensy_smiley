@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #include "lcd.h"
 #include "graphics.h"
 #include "cpu_speed.h"
@@ -110,6 +111,8 @@ int main(void);
 
 void level1(void){
     continue_level = 1;
+    lives = 3;
+    score = 0;
     init_timer3(2500);
     init_right_interrupt();
     init_left_interrupt();
@@ -165,11 +168,23 @@ void level1(void){
 }
 
 void level2(void){
-    send_debug_string("level 2");
-    clear_screen();
+    int continue_level = 1;
     level = 2;
-    draw_status(lives, score);
-    show_screen();
+    init_poten();
+    send_debug_string("level 2");
+    init_sprite(&happy, rand() % 70, 10, 16, 16, happy_bm);
+    init_sprite(&angry, rand() % 70, 10, 16, 16, angry_bm);
+    init_sprite(&silly, rand() % 70, 10, 16, 16, silly_bm);
+    init_sprite(&character, 42, 40, 8, 8, character_bm);
+    int valid = check_valid_faces(happy, angry, silly);
+    while(!valid){
+        happy.x = rand() % 70;
+        angry.x = rand() % 70;
+        silly.x = rand() % 70;
+        valid = check_valid_faces(happy, angry, silly);
+    }
+    init_timer3(2500);
+    while(continue_level);
 }
 
 void level3(void){
@@ -211,6 +226,8 @@ void startup(void){
 
 void menu(void){
     int cur_selected = 1;
+    lives = 3;
+    score = 20;
 
     send_debug_string("menu starting");
     int selected = 0;
@@ -240,6 +257,12 @@ void menu(void){
 int main(void){
     init_hardware();
     usb_wait();
+    ADMUX = 0b01000000;
+    ADCSRA = 0b10000111;
+    long result; //store conversion result
+    char disp_buffer[32]; // store value to display on CD
+    char int_buffer[10]; // store ascii conversion
+
     startup();
     menu();
     return 0;
@@ -309,6 +332,15 @@ ISR(TIMER3_COMPA_vect){//screen refresh timer
         }
 
         silly.is_visible = 0;
+    }
+
+    if (level == 2){
+        uint16_t result = adc_read(0);
+        int new_x = get_x_position_from_poten(result);
+        character.x = new_x;
+        char buff[50];
+        sprintf(buff, "POTEN: %d", new_x);
+        send_debug_string(buff);
     }
 
     clear_screen();

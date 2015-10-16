@@ -107,6 +107,20 @@ void init_timer3(int speed){
     TCCR3B |= (1 << CS32) | (1 << CS30);
 }
 
+void turnoff_timer3(void){
+    TCCR3B &= ~(1 << WGM32); 
+    TIMSK3 &= ~(1 << OCIE3A);
+}
+
+void turnoff_all_interrupts(void){
+    EICRA &= ~(1 << ISC01);
+    EIMSK &= ~(1 << INT0);
+    PCICR &= ~(1 << PCIE0);
+    PCMSK0 &= ~(1 << PCINT1);
+    TCCR3B &= ~(1 << WGM32); 
+    TIMSK3 &= ~(1 << OCIE3A);
+}
+
 void set_fall_speed(int speed){
     if(speed == 1){
         OCR3A = 2500;
@@ -137,7 +151,7 @@ void usb_wait(void){
 }
 
 void draw_menu(int cur_selection){
-    draw_string(0, 0, "Please select a level");
+    draw_string(0, 0, "Select a level");
     draw_string(0, 10, "Level 1");
     draw_string(0, 20, "Level 2");
     draw_string(0, 30, "Level 3");
@@ -146,15 +160,15 @@ void draw_menu(int cur_selection){
     }
 }
 
-void draw_status(int level, int score){
-    char level_string[4];
-    char score_string[6];
+void draw_status(int liv, int sco){
+    char lives_string[10];
+    char score_string[10];
 
-    sprintf(level_string, "L: %d", level);
-    sprintf(score_string, "S: %d", score);
+    sprintf(lives_string, "L: %d.", liv);
+    sprintf(score_string, "S: %d.", sco);
 
-    draw_string(0, 0, level_string);
-    draw_string(50, 0, score_string);
+    draw_string(0, 0, lives_string);
+    draw_string(42, 0, score_string);
     draw_line(0, 9, 83, 9);
 }
 

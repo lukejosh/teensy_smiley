@@ -95,16 +95,21 @@ Sprite angry;
 Sprite silly;
 Sprite character;
 int level;
-int lives = 3;
-int score = 0;
-int speed = 0; 
+int some_random;
+volatile int lives = 3;
+volatile int score = 0;
+volatile int speed = 0;
+volatile int continue_level;
 
 void level1(void);
 void level2(void);
 void level3(void);
 void to_level(int level);
+void menu(void);
+int main(void);
 
 void level1(void){
+    continue_level = 1;
     init_timer3(2500);
     init_right_interrupt();
     init_left_interrupt();
@@ -127,21 +132,43 @@ void level1(void){
     draw_sprite(&angry);
     draw_sprite(&character);
     level = 1;
-    draw_status(level, 10);
+    draw_status(lives, score);
     show_screen();
 
-    while(lives != 0 || score != 20){
-        //move sprites
-        //check for collisions | wraparounds
-        //send_debug_string("reduce 1");
+    send_debug_string("begin loop");
+    while(continue_level);
+
+    turnoff_all_interrupts();
+    send_debug_string("out of loop");
+    clear_screen();
+    draw_centred(10, "Game over! :(");
+    draw_centred(20, "Play again?");
+    draw_string(0, 40, "Y");
+    draw_string(75, 40, "N");
+    show_screen();
+
+    int continue_selection = wait_for_any_button();
+    send_debug_string("passed wait!");
+
+    if (continue_selection == 1){
+        clear_screen();
+        menu();
     }
+
+    else{
+        clear_screen();
+        draw_centred(20, "Goodbye!");
+        show_screen();
+    }
+
+    show_screen();
 }
 
 void level2(void){
     send_debug_string("level 2");
     clear_screen();
     level = 2;
-    draw_status(level, score);
+    draw_status(lives, score);
     show_screen();
 }
 
@@ -149,7 +176,7 @@ void level3(void){
     send_debug_string("level 3");
     clear_screen();
     level = 3;
-    draw_status(level, score);
+    draw_status(lives, score);
     show_screen();
 }
 
@@ -183,7 +210,7 @@ void startup(void){
 }
 
 void menu(void){
-    int cur_selected;
+    int cur_selected = 1;
 
     send_debug_string("menu starting");
     int selected = 0;
@@ -219,7 +246,6 @@ int main(void){
 }
 
 ISR(TIMER3_COMPA_vect){//screen refresh timer
-    clear_screen();
     happy.y = happy.y + 2;
     angry.y = angry.y + 2;
     silly.y = silly.y + 2;
@@ -250,13 +276,20 @@ ISR(TIMER3_COMPA_vect){//screen refresh timer
     int coll = check_collisions(character, happy, angry, silly);
 
     if (coll == 1){
-        score += 2;
+        if (happy.is_visible){
+            score += 2;
+        }
         happy.is_visible = 0;
     }
 
-    else if (coll == 2){
-        lives -= 1;
-        angry.is_visible = 0;
+    else if (coll == 2 && angry.is_visible){
+        if (angry.is_visible){
+            lives -= 1;
+        }
+            angry.is_visible = 0;
+            char lbuff[5];
+            sprintf(lbuff, "%d", lives);
+            send_debug_string(lbuff);
     }
 
     else if (coll == 3){
@@ -278,12 +311,17 @@ ISR(TIMER3_COMPA_vect){//screen refresh timer
         silly.is_visible = 0;
     }
 
+    clear_screen();
     draw_sprite(&happy);
     draw_sprite(&angry);
     draw_sprite(&silly);
     draw_sprite(&character);
-    draw_status(level, score);
+    draw_status(lives, score);
     show_screen();
+
+    if (lives == 0 || score == 20){
+        continue_level = 0;
+    }
 }
 
 ISR(INT0_vect){ //right dpad

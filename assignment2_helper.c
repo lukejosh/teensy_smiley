@@ -476,18 +476,37 @@ void level3_collisions(void){
     // }
 
     if(testCollision(happy, silly)){
+        if (happy.y + happy.height >= silly.y - 2 ||silly.y + silly.height >= happy.y - 2){
+            happy.dy *= -1;
+            silly.dy *= -1;
+        }
+        else{
         happy.dx *= -1;
         silly.dx *= -1;
+        }
     }
 
+
     if(testCollision(happy, angry)){
+        if (happy.y + happy.height >= angry.y - 2 ||angry.y + angry.height >= happy.y - 2){
+            happy.dy *= -1;
+            angry.dy *= -1;
+        }
+        else{
         happy.dx *= -1;
-        silly.dx *= -1;
+        angry.dx *= -1;
+        }
     }
 
     if(testCollision(silly, angry)){
-        silly.dx *= -1;
+        if (angry.y + angry.height >= silly.y - 2 || silly.y + silly.height >= angry.y - 2){
+            angry.dy *= -1;
+            silly.dy *= -1;
+        }
+        else{
         angry.dx *= -1;
+        silly.dx *= -1;
+        }
     }
 
     if((happy.x <= 0 && happy.dx == -1) || (happy.x >= 67 && happy.dx == 1)){

@@ -82,6 +82,10 @@ unsigned char character_bm[8] = {
 Sprite happy;
 Sprite angry;
 Sprite silly;
+volatile int level;
+volatile int score;
+volatile int lives;
+volatile int continue_level;
 
 void menu(void);
 
@@ -248,12 +252,12 @@ void draw_status(int liv, int sco){
 }
 
 int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
-    int sprite1_left = sprite1.x - sprite1.width/2;
-    int sprite1_right = sprite1.x + sprite1.width/2;
-    int sprite2_left = sprite2.x - sprite2.width/2;
-    int sprite2_right = sprite2.x + sprite2.width/2;
-    int sprite3_left = sprite3.x - sprite3.width/2;
-    int sprite3_right = sprite3.x + sprite3.width/2;
+    int sprite1_left = sprite1.x;
+    int sprite1_right = sprite1.x + sprite1.width;
+    int sprite2_left = sprite2.x;
+    int sprite2_right = sprite2.x + sprite2.width;
+    int sprite3_left = sprite3.x;
+    int sprite3_right = sprite3.x + sprite3.width;
 
     if ((sprite1_left + 5 >= sprite2_left && sprite1_left - 5 <= sprite2_right)||
         (sprite1_left + 5 >= sprite3_left && sprite1_left - 5 <= sprite3_right)||
@@ -271,19 +275,40 @@ int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
     }
 }
 
-void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
-    if (sprite1.y == 40){
-        sprite1.x = 10;
+int isCollision_lev3(Sprite sprite1, Sprite sprite2){
+
+    // if ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width + 5)&&
+    //    ((sprite1.y + sprite1.height) > (sprite2.y)) - 5 && ((sprite1.y) < (sprite2.y + sprite2.height)))||
+    //    ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width + 5)&&
+    //    ((sprite2.y + sprite2.height) > (sprite1.y)) - 5 && ((sprite2.y) < (sprite1.y + sprite1.height)))){
+    //     return 1;
+    if ((sprite1.is_visible && sprite2.is_visible)&&
+       ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width + 5)&&
+       ((sprite1.y + sprite1.height) > (sprite2.y) - 5) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
+       ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width + 5)&&
+       ((sprite2.y + sprite2.height) > (sprite1.y) - 5) && ((sprite2.y) < (sprite1.y + sprite1.height)))){
+        return 1;
     }
-    if (sprite2.y == 40){
-        sprite2.y = 10;
+
+    else{
+        return 0;
     }
-    if (sprite3.y == 40){
-        sprite3.y = 10;
+}
+
+int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Sprite character){
+    if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1 || isCollision_lev3(sprite1, character) == 1||
+       isCollision_lev3(sprite2, sprite3) == 1 || isCollision_lev3(sprite2, character) == 1 || isCollision_lev3(sprite3, character) == 1){
+        send_debug_string("invalid");
+        return 0;
+    }
+    else{
+        send_debug_string("valid!");
+        return 1;
     }
 }
 
 int isCollision(Sprite sprite1, Sprite sprite2){
+
     if ((sprite1.is_visible && sprite2.is_visible)&&
        ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
        ((sprite1.y + sprite1.height) > (sprite2.y)) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
@@ -307,6 +332,10 @@ int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly)
 
     else if (isCollision(character, silly) == 1){
         return 3;
+    }
+
+    else if (isCollision(happy, angry) == 1 || isCollision(happy, silly) == 1 || isCollision(angry, silly) == 1){
+        return 4;
     }
 
     else{
@@ -361,7 +390,7 @@ void end_level(void){
         menu();
     }
 
-    else{
+    else if (continue_selection == 2){
         clear_screen();
         draw_centred(20, "Goodbye!");
         show_screen();
@@ -377,6 +406,13 @@ void init_all_sprites(void){
     init_sprite(&character, 42, 40, 8, 8, character_bm);
 }
 
+void init_all_sprites_level3(void){
+    init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
+    init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
+    init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
+    init_sprite(&character, 42, 40, 8, 8, character_bm);
+}
+
 void make_enemies_valid(void){
     int valid = check_valid_faces(happy, angry, silly);
     while(!valid){
@@ -387,9 +423,134 @@ void make_enemies_valid(void){
     }
 }
 
+// void make_enemies_valid_level3(void){
+//     int valid = check_valid_faces(happy, angry, silly);
+//     while(!valid){
+//         happy.x = rand() % 67;
+//         angry.x = rand() % 67;
+//         silly.x = rand() % 67;
+//         valid = check_valid_faces(happy, angry, silly);
+//     }
+// }
+
 void draw_all_sprites(void){
     draw_sprite(&happy);
     draw_sprite(&silly);
     draw_sprite(&angry);
     draw_sprite(&character);
+}
+
+void interrupt_level12(void){
+    happy.y = happy.y + 2;
+    angry.y = angry.y + 2;
+    silly.y = silly.y + 2;
+    if (happy.y >= 48 || (!happy.is_visible && !angry.is_visible && !silly.is_visible)){
+        happy.y = 10;
+        angry.y = 10;
+        silly.y = 10;
+
+        happy.is_visible = 1;
+        angry.is_visible = 1;
+        silly.is_visible = 1;
+
+        happy.x = rand() % 67;
+        angry.x = rand() % 67;
+        silly.x = rand() % 67;
+
+        make_enemies_valid();
+    }
+
+    int coll = check_collisions(character, happy, angry, silly);
+    switch(coll){
+        case (1):
+            if (happy.is_visible){
+                score += 2;
+            }
+            happy.is_visible = 0;
+            break;
+
+        case (2):
+            if (angry.is_visible){
+                lives -= 1;
+            }
+            angry.is_visible = 0;
+            break;
+
+        case (3):
+            speed++;
+            if (speed == 4){
+                speed = 1;
+            }
+
+            if(speed == 1){
+                init_timer3(2500);
+            }
+            else if (speed == 2){
+                init_timer3(1750);
+            }
+            else if (speed ==  3){
+                init_timer3(600);
+            }
+
+            silly.is_visible = 0;
+            break;
+    }
+
+    // if (coll == 1){
+    //     if (happy.is_visible){
+    //         score += 2;
+    //     }
+    //     happy.is_visible = 0;
+    // }
+
+    // else if (coll == 2 && angry.is_visible){
+    //     if (angry.is_visible){
+    //         lives -= 1;
+    //     }
+    //         angry.is_visible = 0;
+    //         char lbuff[5];
+    //         sprintf(lbuff, "%d", lives);
+    //         send_debug_string(lbuff);
+    // }
+
+    // else if (coll == 3){
+    //     speed++;
+    //     if (speed == 4){
+    //         speed = 1;
+    //     }
+
+    //     if(speed == 1){
+    //         init_timer3(2500);
+    //     }
+    //     else if (speed == 2){
+    //         init_timer3(1750);
+    //     }
+    //     else if (speed ==  3){
+    //         init_timer3(600);
+    //     }
+
+    //     silly.is_visible = 0;
+    // }
+
+    if (level == 2){
+        uint16_t result = adc_read(0);
+        int new_x = get_x_position_from_poten(result);
+        character.x = new_x;
+        char buff[50];
+        sprintf(buff, "POTEN: %d", new_x);
+        send_debug_string(buff);
+    }
+
+    clear_screen();
+    draw_all_sprites();
+    draw_status(lives, score);
+    show_screen();
+
+    if (lives == 0 || score == 20){
+        continue_level = 0;
+    }
+}
+
+void interrupt_level3(void){
+
 }

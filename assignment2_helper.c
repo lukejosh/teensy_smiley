@@ -493,7 +493,6 @@ void increment_all_level3(void){
     angry.y = angry.y + angry.dy;
     silly.x = silly.x + silly.dx;
     silly.y = silly.y + silly.dy;
-    send_debug_string("in increment");
 }
 
 int testCollision3(Sprite sprite1, Sprite sprite2){
@@ -514,25 +513,6 @@ int testCollision3(Sprite sprite1, Sprite sprite2){
 }
 
 void level3_collisions(void){
-    send_debug_string("in collisions");
-    // if(isCollision(character, happy)){
-    //     send_debug_string("its happening");
-    //     happy.dx *= -1;
-    //     happy.dy *= -1;
-    // }
-
-    // if(isCollision(character, angry)){
-    //     send_debug_string("its happening");
-    //     angry.dx *= -1;
-    //     angry.dy *= -1;
-    // }
-
-    // if(isCollision(character, silly)){
-    //     send_debug_string("its happening");
-    //     silly.dx *= -1;
-    //     silly.dy *= -1;
-    // }
-
     int t1 = testCollision3(happy, silly);
     if (t1 == 1){
         happy.dx *= -1;
@@ -613,16 +593,6 @@ void make_enemies_valid(void){
     }
 }
 
-// void make_enemies_valid_level3(void){
-//     int valid = check_valid_faces(happy, angry, silly);
-//     while(!valid){
-//         happy.x = rand() % 67;
-//         angry.x = rand() % 67;
-//         silly.x = rand() % 67;
-//         valid = check_valid_faces(happy, angry, silly);
-//     }
-// }
-
 void draw_all_sprites(void){
     draw_sprite(&happy);
     draw_sprite(&silly);
@@ -633,60 +603,65 @@ void draw_all_sprites(void){
 void redraw_level3(void){
     int loopmax = 15;
     int loopcount = 0;
+    int valid;
 
     if(!happy.is_visible){
-        happy.x = rand() % 67;
-        happy.y = (rand() % 22) + 10;
-        int valid = check_valid_faces_level3(happy, angry, silly, character);
+        init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
+        happy.is_visible = 0;
+        valid = check_valid_faces_level3(happy, angry, silly, character);
 
         while(!valid && loopcount < loopmax){
-            happy.x = rand() % 67;
-            happy.y = (rand() % 22) + 10;
+            init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
             valid = check_valid_faces_level3(happy, angry, silly, character);
+            happy.is_visible = 0;
             loopcount++;
         }
         if(valid){
             happy.is_visible = 1;
+            happy.dx = rand_dir();
+            happy.dy = rand_dir();
         }
         loopcount = 0;
 
     }
 
     if(!angry.is_visible){
-        angry.x = rand() % 67;
-        angry.y = (rand() % 22) + 10;
-        int valid = check_valid_faces_level3(happy, angry, silly, character);
+        init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
+        angry.is_visible = 0;
+        valid = check_valid_faces_level3(happy, angry, silly, character);
 
         while(!valid && loopcount < loopmax){
-            angry.x = rand() % 67;
-            angry.y = (rand() % 22) + 10;
+            init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
+            angry.is_visible = 0;
             valid = check_valid_faces_level3(happy, angry, silly, character);
             loopcount++;
         }
         if(valid){
             angry.is_visible = 1;
+            angry.dx = rand_dir();
+            angry.dy = rand_dir();
         }
-        loopcount = 0;
-
+    loopcount = 0;
     }
 
     if(!silly.is_visible){
-        silly.x = rand() % 67;
-        silly.y = (rand() % 22) + 10;
-        int valid = check_valid_faces_level3(happy, angry, silly, character);
+        init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
+        silly.is_visible = 0;
+        valid = check_valid_faces_level3(happy, angry, silly, character);
 
         while(!valid && loopcount < loopmax){
-            silly.x = rand() % 67;
-            silly.y = (rand() % 22) + 10;
+            init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
+            silly.is_visible = 0;
             valid = check_valid_faces_level3(happy, angry, silly, character);
             loopcount++;
         }
         if(valid){
             silly.is_visible = 1;
+            silly.dx = rand_dir();
+            silly.dy = rand_dir();
         }
         loopcount = 0;
     }
-
 }
 
 void interrupt_level12(void){
@@ -713,14 +688,14 @@ void interrupt_level12(void){
     switch(coll){
         case (1):
             if (happy.is_visible){
-                score += 2;
+                //score += 2;
             }
             happy.is_visible = 0;
             break;
 
         case (2):
             if (angry.is_visible){
-                lives -= 1;
+                //lives -= 1;
             }
             angry.is_visible = 0;
             break;
@@ -745,49 +720,10 @@ void interrupt_level12(void){
             break;
     }
 
-    // if (coll == 1){
-    //     if (happy.is_visible){
-    //         score += 2;
-    //     }
-    //     happy.is_visible = 0;
-    // }
-
-    // else if (coll == 2 && angry.is_visible){
-    //     if (angry.is_visible){
-    //         lives -= 1;
-    //     }
-    //         angry.is_visible = 0;
-    //         char lbuff[5];
-    //         sprintf(lbuff, "%d", lives);
-    //         send_debug_string(lbuff);
-    // }
-
-    // else if (coll == 3){
-    //     speed++;
-    //     if (speed == 4){
-    //         speed = 1;
-    //     }
-
-    //     if(speed == 1){
-    //         init_timer3(2500);
-    //     }
-    //     else if (speed == 2){
-    //         init_timer3(1750);
-    //     }
-    //     else if (speed ==  3){
-    //         init_timer3(600);
-    //     }
-
-    //     silly.is_visible = 0;
-    // }
-
     if (level == 2){
         uint16_t result = adc_read(0);
         int new_x = get_x_position_from_poten(result);
         character.x = new_x;
-        char buff[50];
-        sprintf(buff, "POTEN: %d", new_x);
-        send_debug_string(buff);
     }
 
     clear_screen();
@@ -801,7 +737,7 @@ void interrupt_level12(void){
 }
 
 void interrupt_level3(void){
-    send_debug_string("lv3 int");
+    turnoff_timer3();
     redraw_level3();
     level3_collisions();
     increment_all_level3();
@@ -848,4 +784,5 @@ void interrupt_level3(void){
     if(lives == 0 || score == 20){
         continue_level = 0;
     }
+    init_timer3(2500);
 }

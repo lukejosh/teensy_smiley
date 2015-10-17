@@ -177,7 +177,7 @@ void init_hardware(void){
 
 void init_timer1(){
     TCCR1B = (1 << WGM12);
-    OCR1A = 1600;
+    OCR1A = 600;
     TIMSK1 = (1 << OCIE1A);
     TCCR1B |= (1 << CS12) | (1 << CS10);
 }
@@ -343,17 +343,17 @@ int testCollision1(Sprite sprite1, Sprite sprite2){
     int sprite2_newy = sprite2.y + sprite2.dy;
 
     if( (sprite1.is_visible && sprite2.is_visible) &&
-        ((((sprite1_newx >= sprite2_newx - 1) &&
-    (sprite1_newx <= sprite2_newx + sprite2.width + 1))
+        ((((sprite1_newx >= sprite2_newx) &&
+    (sprite1_newx <= sprite2_newx + sprite2.width))
     &&
-    ((sprite1_newy >= sprite2_newy - sprite1.height - 1) &&
-    (sprite1_newy <= sprite2_newy + sprite2.height + 1)))
+    ((sprite1_newy >= sprite2_newy - sprite1.height) &&
+    (sprite1_newy <= sprite2_newy + sprite2.height)))
     ||
-    (((sprite2_newx >= sprite1_newx - 1) &&
-    (sprite2_newx <= sprite1_newx + sprite1.width + 1))
+    (((sprite2_newx >= sprite1_newx) &&
+    (sprite2_newx <= sprite1_newx + sprite1.width))
     &&
-    ((sprite2_newy >= sprite1_newy - sprite2.height - 1) &&
-    (sprite2_newy <= sprite1_newy + sprite1.height + 1))))){
+    ((sprite2_newy >= sprite1_newy - sprite2.height) &&
+    (sprite2_newy <= sprite1_newy + sprite1.height))))){
 
         return 1;
 

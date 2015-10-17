@@ -310,13 +310,54 @@ int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Spr
 int testCollision(Sprite sprite1, Sprite sprite2){
     if(((sprite1.is_visible && sprite2.is_visible) &&
         
-       ((sprite1.x >= sprite2.x) && (sprite1.x <= sprite2.x + sprite2.width)) &&
+       ((sprite1.x >= sprite2.x) && (sprite1.x <= sprite2.x + sprite2.width + 2)) &&
        ((sprite1.y >= sprite2.y - sprite1.height) && (sprite1.y  <= sprite2.y + sprite2.height)))||
 
-       (((sprite2.x >= sprite1.x) && (sprite2.x <= sprite1.x + sprite1.width)) &&
+       (((sprite2.x >= sprite1.x) && (sprite2.x <= sprite1.x + sprite1.width + 2)) &&
        ((sprite2.y >= sprite1.y - sprite2.height) && (sprite2.y  <= sprite1.y + sprite1.height)))){
         return 1;
     }
+    else{
+        return 0;
+    }
+}
+
+/*
+check if there WILL BE a collision!
+   _____       
+  |     |
+  |     |
+  |_____|
+ _____
+|     |
+|     |
+|_____|
+*/
+
+
+int testCollision1(Sprite sprite1, Sprite sprite2){
+    int sprite1_newx = sprite1.x + sprite1.dx;
+    int sprite1_newy = sprite1.y + sprite1.dy;
+    int sprite2_newx = sprite2.x + sprite2.dx;
+    int sprite2_newy = sprite2.y + sprite2.dy;
+
+    if( (sprite1.is_visible && sprite2.is_visible) &&
+        ((((sprite1_newx >= sprite2_newx - 1) &&
+    (sprite1_newx <= sprite2_newx + sprite2.width + 1))
+    &&
+    ((sprite1_newy >= sprite2_newy - sprite1.height - 1) &&
+    (sprite1_newy <= sprite2_newy + sprite2.height + 1)))
+    ||
+    (((sprite2_newx >= sprite1_newx - 1) &&
+    (sprite2_newx <= sprite1_newx + sprite1.width + 1))
+    &&
+    ((sprite2_newy >= sprite1_newy - sprite2.height - 1) &&
+    (sprite2_newy <= sprite1_newy + sprite1.height + 1))))){
+
+        return 1;
+
+    }
+
     else{
         return 0;
     }
@@ -455,6 +496,23 @@ void increment_all_level3(void){
     send_debug_string("in increment");
 }
 
+int testCollision3(Sprite sprite1, Sprite sprite2){
+    if (testCollision1(sprite1, sprite2)){
+        sprite1.dx *= -1;
+        sprite2.dx *= -1;
+
+        if (testCollision1(sprite1, sprite2)){
+            return 2;
+        }
+        else{
+            return 1;
+        }
+    }
+    else{
+        return 0;
+    }
+}
+
 void level3_collisions(void){
     send_debug_string("in collisions");
     // if(isCollision(character, happy)){
@@ -475,38 +533,34 @@ void level3_collisions(void){
     //     silly.dy *= -1;
     // }
 
-    if(testCollision(happy, silly)){
-        if (happy.y + happy.height >= silly.y - 2 ||silly.y + silly.height >= happy.y - 2){
-            happy.dy *= -1;
-            silly.dy *= -1;
-        }
-        else{
+    int t1 = testCollision3(happy, silly);
+    if (t1 == 1){
         happy.dx *= -1;
         silly.dx *= -1;
-        }
+    }
+    else if (t1 == 2){
+        happy.dy *= -1;
+        silly.dy *= -1;
     }
 
-
-    if(testCollision(happy, angry)){
-        if (happy.y + happy.height >= angry.y - 2 ||angry.y + angry.height >= happy.y - 2){
-            happy.dy *= -1;
-            angry.dy *= -1;
-        }
-        else{
+    int t2 = testCollision3(happy, angry);
+    if (t2 == 1){
         happy.dx *= -1;
         angry.dx *= -1;
-        }
+    }
+    else if(t2 == 2){
+        happy.dy *= -1;
+        angry.dy *= -1;
     }
 
-    if(testCollision(silly, angry)){
-        if (angry.y + angry.height >= silly.y - 2 || silly.y + silly.height >= angry.y - 2){
-            angry.dy *= -1;
-            silly.dy *= -1;
-        }
-        else{
+    int t3 = testCollision3(angry, silly);
+    if (t3 == 1){
         angry.dx *= -1;
         silly.dx *= -1;
-        }
+    }
+    else if (t3 == 2){
+        angry.dy *= -1;
+        silly.dy *= -1;
     }
 
     if((happy.x <= 0 && happy.dx == -1) || (happy.x >= 67 && happy.dx == 1)){
@@ -748,44 +802,44 @@ void interrupt_level12(void){
 
 void interrupt_level3(void){
     send_debug_string("lv3 int");
-    increment_all_level3();
+    redraw_level3();
     level3_collisions();
-    // int coll = level3_player_collision();
-    // switch(coll){
-    //     case (1):
-    //         if (happy.is_visible){
-    //             score += 2;
-    //         }
-    //         happy.is_visible = 0;
-    //         break;
+    increment_all_level3();
+    int coll = level3_player_collision();
+    switch(coll){
+        case (1):
+            if (happy.is_visible){
+                score += 2;
+            }
+            happy.is_visible = 0;
+            break;
 
-    //     case (2):
-    //         if (angry.is_visible){
-    //             lives -= 1;
-    //         }
-    //         angry.is_visible = 0;
-    //         break;
+        case (2):
+            if (angry.is_visible){
+                lives -= 1;
+            }
+            angry.is_visible = 0;
+            break;
 
-    //     case (3):
-    //         speed++;
-    //         if (speed == 4){
-    //             speed = 1;
-    //         }
+        case (3):
+            speed++;
+            if (speed == 4){
+                speed = 1;
+            }
 
-    //         if(speed == 1){
-    //             init_timer3(2500);
-    //         }
-    //         else if (speed == 2){
-    //             init_timer3(1750);
-    //         }
-    //         else if (speed ==  3){
-    //             init_timer3(600);
-    //         }
+            if(speed == 1){
+                init_timer3(2500);
+            }
+            else if (speed == 2){
+                init_timer3(1750);
+            }
+            else if (speed ==  3){
+                init_timer3(600);
+            }
 
-    //         silly.is_visible = 0;
-    //         break;
-    // }
-    // redraw_level3();
+            silly.is_visible = 0;
+            break;
+    }
     clear_screen();
     draw_all_sprites();
     draw_status(lives, score);

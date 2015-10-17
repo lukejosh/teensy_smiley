@@ -27,13 +27,12 @@ volatile int lives;
 volatile int score;
 volatile int speed;
 volatile int level;
+volatile int continue_level;
 
 Sprite happy;
 Sprite angry;
 Sprite silly;
 Sprite character;
-
-volatile int continue_level;
 
 void level1(void);
 void level2(void);

@@ -277,16 +277,25 @@ int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
 
 int isCollision_lev3(Sprite sprite1, Sprite sprite2){
 
-    // if ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width + 5)&&
-    //    ((sprite1.y + sprite1.height) > (sprite2.y)) - 5 && ((sprite1.y) < (sprite2.y + sprite2.height)))||
-    //    ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width + 5)&&
-    //    ((sprite2.y + sprite2.height) > (sprite1.y)) - 5 && ((sprite2.y) < (sprite1.y + sprite1.height)))){
-    //     return 1;
-    if ((sprite1.is_visible && sprite2.is_visible)&&
-       ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width + 5)&&
-       ((sprite1.y + sprite1.height) > (sprite2.y) - 5) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
-       ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width + 5)&&
-       ((sprite2.y + sprite2.height) > (sprite1.y) - 5) && ((sprite2.y) < (sprite1.y + sprite1.height)))){
+    if (
+       (
+           //(sprite1.is_visible && sprite2.is_visible)&&
+           (sprite1.x >= sprite2.x - 5 && sprite1.x <= sprite2.x + sprite2.width + 5)&&
+           (sprite1.y + sprite1.height >= sprite2.y - 5 && sprite1.y <= sprite2.y + sprite2.height + 5)
+       )
+
+       ||
+
+       (
+           //(sprite2.is_visible && sprite1.is_visible)&&
+           (sprite2.x >= sprite1.x - 5 && sprite2.x <= sprite1.x + sprite1.width + 5)&&
+           (sprite2.y + sprite2.height >= sprite1.y - 5 && sprite2.y <= sprite1.y + sprite1.height + 5)
+       )
+       ){
+
+       // ((sprite1.is_visible && sprite2.is_visible)&&
+       // ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width + 5)&&
+       // ((sprite2.y + sprite2.height) > (sprite1.y) - 5) && ((sprite2.y) < (sprite1.y + sprite1.height))))){
         return 1;
     }
 
@@ -296,7 +305,7 @@ int isCollision_lev3(Sprite sprite1, Sprite sprite2){
 }
 
 int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Sprite character){
-    if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1 || isCollision_lev3(sprite1, character) == 1||
+    if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1   || isCollision_lev3(sprite1, character) == 1||
        isCollision_lev3(sprite2, sprite3) == 1 || isCollision_lev3(sprite2, character) == 1 || isCollision_lev3(sprite3, character) == 1){
         send_debug_string("invalid");
         return 0;
@@ -701,22 +710,23 @@ void interrupt_level12(void){
             break;
 
         case (3):
-            speed++;
-            if (speed == 4){
-                speed = 1;
-            }
+            if(silly.is_visible){
+                speed++;
+                if (speed == 4){
+                    speed = 1;
+                }
 
-            if(speed == 1){
-                init_timer3(2500);
+                if(speed == 1){
+                    init_timer3(2500);
+                }
+                else if (speed == 2){
+                    init_timer3(1750);
+                }
+                else if (speed ==  3){
+                    init_timer3(600);
+                }
+                silly.is_visible = 0;
             }
-            else if (speed == 2){
-                init_timer3(1750);
-            }
-            else if (speed ==  3){
-                init_timer3(600);
-            }
-
-            silly.is_visible = 0;
             break;
     }
 
@@ -737,7 +747,6 @@ void interrupt_level12(void){
 }
 
 void interrupt_level3(void){
-    turnoff_timer3();
     redraw_level3();
     level3_collisions();
     increment_all_level3();
@@ -745,35 +754,37 @@ void interrupt_level3(void){
     switch(coll){
         case (1):
             if (happy.is_visible){
-                score += 2;
+                //score += 2;
             }
             happy.is_visible = 0;
             break;
 
         case (2):
             if (angry.is_visible){
-                lives -= 1;
+                //lives -= 1;
             }
             angry.is_visible = 0;
             break;
 
         case (3):
             speed++;
-            if (speed == 4){
-                speed = 1;
-            }
+            if (silly.is_visible){
+                if (speed == 4){
+                    speed = 1;
+                }
 
-            if(speed == 1){
-                init_timer3(2500);
-            }
-            else if (speed == 2){
-                init_timer3(1750);
-            }
-            else if (speed ==  3){
-                init_timer3(600);
-            }
+                if(speed == 1){
+                    init_timer3(2500);
+                }
+                else if (speed == 2){
+                    init_timer3(1750);
+                }
+                else if (speed ==  3){
+                    init_timer3(600);
+                }
 
-            silly.is_visible = 0;
+                silly.is_visible = 0;
+            }
             break;
     }
     clear_screen();
@@ -784,5 +795,4 @@ void interrupt_level3(void){
     if(lives == 0 || score == 20){
         continue_level = 0;
     }
-    init_timer3(2500);
 }

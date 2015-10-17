@@ -165,18 +165,21 @@ void init_hardware(void){
     LCDInitialise(LCD_DEFAULT_CONTRAST);
     usb_init();
     sei();
-    TCCR1B &= ~((1<<WGM13));
-    TCCR1B &= ~((1<<WGM12));
-    TCCR1A &= ~((1<<WGM11));
-    TCCR1A &= ~((1<<WGM10));
-    TCCR1B |= ((1 << CS12) | (1 << CS10));
-    TCCR1B &= ~(1 << CS11);
+    // TCCR1B |= ((1 << CS12) | (1 << CS10));
+    // TCCR1B &= ~(1 << CS11);
 
     
     //TCCR3B = (1 << WGM32);
     //OCR3A = 65000;
     //TIMSK3 = (1 << OCIE3A);
     //TCCR3B = (1 << CS32) | (1 << CS30);
+}
+
+void init_timer1(){
+    TCCR1B = (1 << WGM12);
+    OCR1A = 1600;
+    TIMSK1 = (1 << OCIE1A);
+    TCCR1B |= (1 << CS12) | (1 << CS10);
 }
 
 void init_timer3(int speed){
@@ -196,8 +199,10 @@ void turnoff_all_interrupts(void){
     EIMSK &= ~(1 << INT0);
     PCICR &= ~(1 << PCIE0);
     PCMSK0 &= ~(1 << PCINT1);
-    TCCR3B &= ~(1 << WGM32); 
-    TIMSK3 &= ~(1 << OCIE3A);
+    TCCR1B &= ~(1 << CS12);
+    TCCR1B &= ~(1 << CS10);
+    TCCR3B &= ~(1 << CS32);
+    TCCR3B &= ~(1 << CS30);
 }
 
 void set_fall_speed(int speed){
@@ -330,19 +335,6 @@ int testCollision(Sprite sprite1, Sprite sprite2){
         return 0;
     }
 }
-
-/*
-check if there WILL BE a collision!
-   _____       
-  |     |
-  |     |
-  |_____|
- _____
-|     |
-|     |
-|_____|
-*/
-
 
 int testCollision1(Sprite sprite1, Sprite sprite2){
     int sprite1_newx = sprite1.x + sprite1.dx;

@@ -19,6 +19,7 @@ void usb_wait(void);
 void draw_menu(int cur_selection);
 void draw_status(int liv, int sco);
 int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
+void init_timer1(void);
 void init_timer3(int);
 void loop_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3);
 void init_right_interrupt(void);

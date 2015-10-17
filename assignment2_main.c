@@ -82,8 +82,7 @@ void level3(void){
     init_level(3);
     init_timer3(1500);
     init_all_sprites_level3();
-    init_left_interrupt();
-    init_right_interrupt();
+    init_timer1();
     int valid = check_valid_faces_level3(happy, angry, silly, character);
 
     while(!valid){
@@ -164,8 +163,6 @@ int main(void){
     usb_wait();
     startup();
     srand(TCNT1);
-    init_timer1();
-    while(1);
     menu();
     return 0;
 }
@@ -183,22 +180,27 @@ ISR(TIMER1_COMPA_vect){
     int chars = usb_serial_available();
     char input = usb_serial_getchar();
 
-    if(input == 'w' || input == 's' || input == 'a' || input == 'd'){
-        test++;
+    switch(input){
+        case ('w'):
+            character.y--;
+            break;
+
+        case('s'):
+            character.y++;
+            break;
+
+        case('a'):
+            character.x--;
+            break;
+
+        case('d'):
+            character.x++;
+            break;
+
     }
     while(usb_serial_available()){
        usb_serial_getchar();
     }
-    char buff[10];
-    char buff1[10];
-
-    sprintf(buff, "%d", test);
-    sprintf(buff1, "%d", chars);
-
-    clear_screen();
-    draw_string(0,20,buff1);
-    draw_string(0,0, buff);
-    show_screen();
 }
 
 ISR(INT0_vect){ //right dpad

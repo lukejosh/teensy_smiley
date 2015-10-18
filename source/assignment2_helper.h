@@ -47,3 +47,4 @@ void increment_all_level3(void);
 void level3_collisions(void);
 float rand_dir(void);
 int test_collision(Sprite sprite1, Sprite sprite2);
+int testCollision3(Sprite sprite1, Sprite sprite2);

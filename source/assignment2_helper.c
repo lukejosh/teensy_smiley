@@ -123,6 +123,10 @@ int wait_for_any_button(void){
         _delay_ms(50);
         return 2;
     }
+
+    else{
+        return 0;
+    }
 }
 
 void send_line(char* string) {
@@ -161,6 +165,7 @@ void init_hardware(void){
     LCDInitialise(LCD_DEFAULT_CONTRAST);
     usb_init();
     sei();
+    TCCR4B |= ((1<< CS40) | (1 << CS41) | (1 << CS42) | (1 << CS43));
     // TCCR1B |= ((1 << CS12) | (1 << CS10));
     // TCCR1B &= ~(1 << CS11);
 
@@ -235,7 +240,7 @@ void draw_menu(int cur_selection){
     draw_string(0, 10, "Level 1");
     draw_string(0, 20, "Level 2");
     draw_string(0, 30, "Level 3");
-    if(cur_selection > 0 & cur_selection < 4){
+    if((cur_selection > 0) & (cur_selection < 4)){
         draw_string(40, cur_selection * 10, "<--");
     }
 }
@@ -360,10 +365,10 @@ int isCollision(Sprite sprite1, Sprite sprite2){
 
     if ((sprite1.is_visible && sprite2.is_visible)&&
 
-       ((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
+       (((sprite1.x >= sprite2.x && sprite1.x <= sprite2.x + sprite2.width)&&
        ((sprite1.y + sprite1.height) > (sprite2.y)) && ((sprite1.y) < (sprite2.y + sprite2.height)))||
        ((sprite2.x >= sprite1.x && sprite2.x <= sprite1.x + sprite1.width)&&
-       ((sprite2.y + sprite2.height) > (sprite1.y)) && ((sprite2.y) < (sprite1.y + sprite1.height)))){
+       ((sprite2.y + sprite2.height) > (sprite1.y)) && ((sprite2.y) < (sprite1.y + sprite1.height))))){
         return 1;
     }
 
@@ -457,9 +462,9 @@ void init_all_sprites(void){
 }
 
 float rand_dir(void){
-    float dir = rand() % 2;
+    float dir = rand() % 3;
 
-    if (dir == 0){
+    if (dir == 2){
         dir = -1;
     }
     return dir;
@@ -477,6 +482,19 @@ void init_all_sprites_level3(void){
     angry.dy = rand_dir();
     silly.dx = rand_dir();
     silly.dy = rand_dir();
+
+    while((happy.dx == 0 && happy.dy == 0)){
+        happy.dx = rand_dir();
+        happy.dy = rand_dir();
+    }
+    while((angry.dx == 0 && angry.dy == 0)){
+        angry.dx = rand_dir();
+        angry.dy = rand_dir();
+    }
+    while((silly.dx == 0 && silly.dy == 0)){
+        silly.dx = rand_dir();
+        silly.dy = rand_dir();
+    }
 }
 
 void increment_all_level3(void){
@@ -488,8 +506,102 @@ void increment_all_level3(void){
     silly.y = silly.y + silly.dy;
 }
 
+int colliding_x(Sprite sprite1, Sprite sprite2){
+    if (((sprite1.x > sprite2.x) && (sprite1.x < sprite2.x + sprite2.width))
+        ||
+        ((sprite2.x > sprite1.x) && (sprite2.x < sprite1.x + sprite1.width))){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+//                                 HAPPY(M)        SILLY(S)
+void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
+    int move_sprite;
+    int stat_sprite;
+
+    Sprite sprites[2];
+    sprites[0] = sprite1;
+    sprites[1] = sprite2;
+
+    if (sprites[0].dy == 0 && sprites[1].dy == 0){
+        directions[0] = sprites[0].dx * -1;
+        directions[2] = sprites[1].dx * -1;
+
+        if(sprites[0].y == sprites[1].y){
+            directions[1] = 0;
+            directions[3] = 0;
+        }
+        else if (sprites[0].y < sprites[1].y){
+            directions[1] = -1;
+            directions[3] =  1;
+        }
+        else{
+            directions[1] =  1;
+            directions[3] = -1;
+        }
+    }
+
+    else if (sprites[0].dy == 0 || sprites[1].dy == 0){
+
+        if(sprites[0].dy == 0){
+            move_sprite = 1;
+            stat_sprite = 0;
+        }
+        else{
+            stat_sprite = 1;
+            move_sprite = 0; //happy
+        }
+
+        if(colliding_x(sprites[0], sprites[1])){
+            send_debug_string("colliding xs");
+            directions[(move_sprite * 2) + 1] = sprites[move_sprite].dy * -1;
+            directions[(move_sprite * 2)] = sprites[move_sprite].dx;
+
+            directions[(stat_sprite * 2) + 1] = sprites[stat_sprite].dy * -1;
+            directions[(stat_sprite * 2)] = sprites[stat_sprite].dx;
+        }
+
+        else{
+            send_debug_string("not colliding xs");
+            directions[stat_sprite * 2] = sprites[stat_sprite].dx * -1;
+
+            directions[move_sprite * 2] = sprites[move_sprite].dx * -1;
+            directions[move_sprite * 2 + 1] = sprites[move_sprite].dy * -1;
+
+            if(sprites[move_sprite].y < sprites[stat_sprite].y){
+                directions[stat_sprite * 2 + 1] = 1;
+            }
+            else{
+                directions[stat_sprite * 2 + 1] = -1;
+            }
+        }
+    }
+
+    else{
+
+        int t1 = testCollision3(sprites[0], sprites[1]);
+        if (t1 == 1){
+            directions[0] = sprites[0].dx * -1;
+            directions[2] = sprites[1].dx * -1;
+
+            directions[1] = sprites[0].dy;
+            directions[3] = sprites[1].dy;
+        }
+        else if (t1 == 2){
+            directions[1] = sprites[0].dy * -1;
+            directions[3] = sprites[1].dy * -1;
+
+            directions[0] = sprites[0].dx;
+            directions[2] = sprites[1].dx;
+        }
+    }
+}
+
 int testCollision3(Sprite sprite1, Sprite sprite2){
     if (testCollision1(sprite1, sprite2)){
+        send_debug_string("collision exists");
         sprite1.dx *= -1;
         sprite2.dx *= -1;
 
@@ -506,35 +618,63 @@ int testCollision3(Sprite sprite1, Sprite sprite2){
 }
 
 void level3_collisions(void){
-    int t1 = testCollision3(happy, silly);
-    if (t1 == 1){
-        happy.dx *= -1;
-        silly.dx *= -1;
-    }
-    else if (t1 == 2){
-        happy.dy *= -1;
-        silly.dy *= -1;
+    // int t1 = testCollision3(happy, silly);
+    // if (t1 == 1){
+    //     happy.dx *= -1;
+    //     silly.dx *= -1;
+    // }
+    // else if (t1 == 2){
+    //     happy.dy *= -1;
+    //     silly.dy *= -1;
+    // }
+
+    // int t2 = testCollision3(happy, angry);
+    // if (t2 == 1){
+    //     happy.dx *= -1;
+    //     angry.dx *= -1;
+    // }
+    // else if(t2 == 2){
+    //     happy.dy *= -1;
+    //     angry.dy *= -1;
+    // }
+
+    // int t3 = testCollision3(angry, silly);
+    // if (t3 == 1){
+    //     angry.dx *= -1;
+    //     silly.dx *= -1;
+    // }
+    // else if (t3 == 2){
+    //     angry.dy *= -1;
+    //     silly.dy *= -1;
+    // }
+
+    if(testCollision3(happy, silly)){
+        float d1[4];
+        determine_new_direction(happy, silly, d1);
+        happy.dx = d1[0];
+        happy.dy = d1[1];
+        silly.dx = d1[2];
+        silly.dy = d1[3];
     }
 
-    int t2 = testCollision3(happy, angry);
-    if (t2 == 1){
-        happy.dx *= -1;
-        angry.dx *= -1;
-    }
-    else if(t2 == 2){
-        happy.dy *= -1;
-        angry.dy *= -1;
+    if(testCollision3(happy, angry)){
+        float d2[4];
+        determine_new_direction(happy, angry, d2);
+        happy.dx = d2[0];
+        happy.dy = d2[1];
+        angry.dx = d2[2];
+        angry.dy = d2[3];
     }
 
-    int t3 = testCollision3(angry, silly);
-    if (t3 == 1){
-        angry.dx *= -1;
-        silly.dx *= -1;
+    if(testCollision3(angry, silly)){
+        float d3[4];
+        determine_new_direction(angry, silly, d3);
+        angry.dx = d3[0];
+        angry.dy = d3[1];
+        silly.dx = d3[2];
+        silly.dy = d3[3];
     }
-    else if (t3 == 2){
-        angry.dy *= -1;
-        silly.dy *= -1;
-    }
+
 
     if((happy.x <= 0 && happy.dx == -1) || (happy.x >= 67 && happy.dx == 1)){
         happy.dx *= -1;
@@ -548,15 +688,15 @@ void level3_collisions(void){
         angry.dx *= -1;
     }
 
-    if((happy.y <= 10 && happy.dy == -1 || happy.y >= 32 && happy.dy == 1)){
+    if((happy.y <= 10 && happy.dy == -1) || (happy.y >= 32 && happy.dy == 1)){
         happy.dy *= -1;
     }
 
-    if((angry.y <= 10 && angry.dy == -1 || angry.y >= 32 && angry.dy == 1)){
+    if((angry.y <= 10 && angry.dy == -1) || (angry.y >= 32 && angry.dy == 1)){
         angry.dy *= -1;
     }
 
-    if((silly.y <= 10 && silly.dy == -1 || silly.y >= 32 && silly.dy == 1)){
+    if((silly.y <= 10 && silly.dy == -1) || (silly.y >= 32 && silly.dy == 1)){
         silly.dy *= -1;
     }
 }
@@ -613,6 +753,11 @@ void redraw_level3(void){
             happy.is_visible = 1;
             happy.dx = rand_dir();
             happy.dy = rand_dir();
+            while((happy.dx == 0 && happy.dy == 0)){
+                happy.dx = rand_dir();
+                happy.dy = rand_dir();
+            }
+
         }
         loopcount = 0;
 
@@ -631,8 +776,10 @@ void redraw_level3(void){
         }
         if(valid){
             angry.is_visible = 1;
-            angry.dx = rand_dir();
-            angry.dy = rand_dir();
+            while((angry.dx == 0 && angry.dy == 0)){
+                angry.dx = rand_dir();
+                angry.dy = rand_dir();
+            }
         }
     loopcount = 0;
     }
@@ -650,8 +797,10 @@ void redraw_level3(void){
         }
         if(valid){
             silly.is_visible = 1;
-            silly.dx = rand_dir();
-            silly.dy = rand_dir();
+            while((silly.dx == 0 && silly.dy == 0)){
+                silly.dx = rand_dir();
+                silly.dy = rand_dir();
+            }
         }
         loopcount = 0;
     }

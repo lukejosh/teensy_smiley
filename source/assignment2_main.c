@@ -68,7 +68,6 @@ void level2(void){
     continue_level = 1;
     init_poten();
     init_all_sprites();
-    int valid = check_valid_faces(happy, angry, silly);
     make_enemies_valid();
     clear_screen();
     draw_all_sprites();
@@ -158,7 +157,8 @@ int main(void){
     init_hardware();
     usb_wait();
     startup();
-    srand(TCNT1);
+    send_debug_string("heloooo");
+    srand(TCNT4);
     menu();
     return 0;
 }
@@ -173,7 +173,6 @@ ISR(TIMER3_COMPA_vect){ //screen refresh timer
 }
 
 ISR(TIMER1_COMPA_vect){
-    int chars = usb_serial_available();
     char input = usb_serial_getchar();
 
     switch(input){

@@ -876,6 +876,10 @@ void redraw_level3(void){
 }
 
 void interrupt_level12(void){
+    if (lives == 0 || score == 20){
+        continue_level = 0;
+        break;
+    }
     happy.y = happy.y + 2;
     angry.y = angry.y + 2;
     silly.y = silly.y + 2;
@@ -942,10 +946,6 @@ void interrupt_level12(void){
     draw_all_sprites();
     draw_status(lives, score);
     show_screen();
-
-    if (lives == 0 || score == 20){
-        continue_level = 0;
-    }
 }
 
 void interrupt_level3(void){

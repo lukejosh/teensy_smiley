@@ -157,7 +157,6 @@ int main(void){
     init_hardware();
     usb_wait();
     startup();
-    send_debug_string("heloooo");
     srand(TCNT4);
     menu();
     return 0;

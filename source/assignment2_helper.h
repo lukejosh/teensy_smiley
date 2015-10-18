@@ -26,7 +26,7 @@ void init_right_interrupt(void);
 void init_left_interrupt(void);
 int isCollision(Sprite sprite1, Sprite sprite2);
 int check_collisions(Sprite character, Sprite happy, Sprite angry, Sprite silly);
-void set_fall_speed(int speed);
+void set_fall_speed(int ctctime);
 void turnoff_timer3(void);
 void turnoff_all_interrupts(void);
 void init_poten(void);

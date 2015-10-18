@@ -29,8 +29,6 @@ volatile int speed;
 volatile int level;
 volatile int continue_level;
 
-volatile int test = 0;
-
 Sprite happy;
 Sprite angry;
 Sprite silly;
@@ -43,10 +41,10 @@ void to_level(int level);
 void menu(void);
 
 void level1(void){
-    turnoff_all_interrupts();
+    level = 1;
+    speed = 1;
     init_level(1);
     continue_level = 1;
-    init_timer3(2500);
     init_right_interrupt();
     init_left_interrupt();
     clear_screen();
@@ -55,7 +53,6 @@ void level1(void){
     make_enemies_valid();
     draw_all_sprites();
 
-    level = 1;
     draw_status(lives, score);
     show_screen();
 
@@ -65,6 +62,7 @@ void level1(void){
 
 void level2(void){
     init_level(2);
+    speed = 1;
     continue_level = 1;
     init_poten();
     init_all_sprites();

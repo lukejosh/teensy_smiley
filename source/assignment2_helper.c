@@ -86,6 +86,7 @@ volatile int level;
 volatile int score;
 volatile int lives;
 volatile int continue_level;
+volatile int speed;
 
 void menu(void);
 
@@ -183,9 +184,9 @@ void init_timer1(){
     TCCR1B |= (1 << CS12) | (1 << CS10);
 }
 
-void init_timer3(int speed){
+void init_timer3(int ctctime){
     TCCR3B = (1 << WGM32);
-    OCR3A = speed;
+    OCR3A = ctctime;
     TIMSK3 = (1 << OCIE3A);
     TCCR3B |= (1 << CS32) | (1 << CS30);
 }
@@ -204,17 +205,6 @@ void turnoff_all_interrupts(void){
     TCCR1B &= ~(1 << CS10);
     TCCR3B &= ~(1 << CS32);
     TCCR3B &= ~(1 << CS30);
-}
-
-void set_fall_speed(int speed){
-    if(speed == 1){
-        OCR3A = 2500;
-    }
-    else if (speed == 2){
-        OCR3A = 2000;
-    }
-    else if(speed == 3)
-        OCR3A = 1500;
 }
 
 void init_right_interrupt(void){
@@ -481,7 +471,7 @@ void init_all_sprites_level3(void){
     init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
     init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
     init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
-    init_sprite(&character, 42, 40, 8, 8, character_bm);
+    init_sprite(&character, -20, 40, 8, 8, character_bm);
 
     happy.dx = rand_dir();
     happy.dy = rand_dir();
@@ -505,29 +495,12 @@ void init_all_sprites_level3(void){
 }
 
 void increment_all_level3(void){
-    if(happy.dx + happy.dy == 1){
-        happy.x = happy.x + happy.dx * 2;
-        happy.y = happy.y + happy.dy * 2;
-    }
-    else{
         happy.x = happy.x + happy.dx;
         happy.y = happy.y + happy.dy;    
-    }
 
-    if(angry.dx + angry.dy == 1){
-        angry.x = angry.x + angry.dx * 2;
-        angry.y = angry.y + angry.dy * 2;
-    }
-    else{
         angry.x = angry.x + angry.dx;
         angry.y = angry.y + angry.dy;    
-    }
 
-    if(silly.dx + silly.dy == 1){
-        silly.x = silly.x + silly.dx * 2;
-        silly.y = silly.y + silly.dy * 2;
-    }
-    else{
         silly.x = silly.x + silly.dx;
         silly.y = silly.y + silly.dy;    
     }
@@ -803,7 +776,7 @@ void draw_all_sprites(void){
 }
 
 void redraw_level3(void){
-    int loopmax = 45;
+    int loopmax = 500;
     int loopcount = 0;
     int valid;
 
@@ -878,7 +851,7 @@ void redraw_level3(void){
 void interrupt_level12(void){
     if (lives == 0 || score == 20){
         continue_level = 0;
-        break;
+        return;
     }
     happy.y = happy.y + 2;
     angry.y = angry.y + 2;
@@ -973,8 +946,8 @@ void interrupt_level3(void){
             break;
 
         case (3):
-            speed++;
             if (silly.is_visible){
+                speed++;
                 if (speed == 4){
                     speed = 1;
                 }

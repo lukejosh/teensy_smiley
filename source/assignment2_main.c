@@ -76,16 +76,20 @@ void level2(void){
 
 void level3(void){
     continue_level = 1;
-    init_level(3);
+    speed = 1;
+    lives = 3;
+    level = 3;
+    score = 0;
     init_all_sprites_level3();
     init_timer1();
-    init_timer3(1500);
-    int valid = check_valid_faces_level3(happy, angry, silly, character);
+    int valid = check_valid_faces_level3(happy, angry, silly, character, 0);
 
     while(!valid){
         init_all_sprites_level3();
-        valid = check_valid_faces_level3(happy, angry, silly, character);
+        valid = check_valid_faces_level3(happy, angry, silly, character, 0);
     }
+    init_level(3);
+    init_timer3(1500);
     clear_screen();
     draw_all_sprites();
     show_screen();
@@ -170,8 +174,8 @@ ISR(TIMER3_COMPA_vect){ //screen refresh timer
 }
 
 ISR(TIMER1_COMPA_vect){
-    char input = usb_serial_getchar();
-
+    char input;
+    input = usb_serial_getchar();
     if(input == 'w' && character.y > 10){
         character.y--;
     }
@@ -184,9 +188,7 @@ ISR(TIMER1_COMPA_vect){
     else if (input == 'd' && character.x < 75){
         character.x++;
     }
-    while(usb_serial_available()){
-       usb_serial_getchar();
-    }
+    usb_serial_flush_input();
 }
 
 ISR(INT0_vect){ //right dpad

@@ -218,7 +218,7 @@ void init_left_interrupt(void){
 }
 
 void usb_wait(void){
-    draw_string(0, 0, "pls connect");
+    draw_string(0, 0, "Initiate terminal");
     show_screen();
     while(!usb_configured() || !usb_serial_get_control());
     clear_screen();
@@ -274,16 +274,16 @@ int isCollision_lev3(Sprite sprite1, Sprite sprite2){
     if (
        (
            //(sprite1.is_visible && sprite2.is_visible)&&
-           (sprite1.x >= sprite2.x - 5 && sprite1.x <= sprite2.x + sprite2.width + 5)&&
-           (sprite1.y + sprite1.height >= sprite2.y - 5 && sprite1.y <= sprite2.y + sprite2.height + 5)
+           (sprite1.x >= sprite2.x && sprite1.x - 5 <= sprite2.x + sprite2.width + 5)&&
+           (sprite1.y + sprite1.height >= sprite2.y -5 && sprite1.y - 5 <= sprite2.y + sprite2.height + 5)
        )
 
        ||
 
        (
            //(sprite2.is_visible && sprite1.is_visible)&&
-           (sprite2.x >= sprite1.x - 5 && sprite2.x <= sprite1.x + sprite1.width + 5)&&
-           (sprite2.y + sprite2.height >= sprite1.y - 5 && sprite2.y <= sprite1.y + sprite1.height + 5)
+           (sprite2.x >= sprite1.x && sprite2.x - 5 <= sprite1.x + sprite1.width + 5)&&
+           (sprite2.y + sprite2.height >= sprite1.y -5 && sprite2.y <= sprite1.y + sprite1.height + 5)
        )
        ){
 
@@ -298,13 +298,24 @@ int isCollision_lev3(Sprite sprite1, Sprite sprite2){
     }
 }
 
-int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Sprite character){
-    if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1   || isCollision_lev3(sprite1, character) == 1||
-       isCollision_lev3(sprite2, sprite3) == 1 || isCollision_lev3(sprite2, character) == 1 || isCollision_lev3(sprite3, character) == 1){
-        return 0;
+int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Sprite character, int athing){
+    if(!athing){
+        if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1   || isCollision_lev3(sprite1, character) == 1||
+           isCollision_lev3(sprite2, sprite3) == 1 || isCollision_lev3(sprite2, character) == 1 || isCollision_lev3(sprite3, character) == 1){
+            return 0;
+        }
+        else{
+            return 1;
+        }
     }
     else{
-        return 1;
+        if((isCollision_lev3(sprite1, sprite2) && sprite1.is_visible && sprite2.is_visible)|| (isCollision_lev3(sprite1, sprite3) && sprite1.is_visible && sprite3.is_visible)   || (isCollision_lev3(sprite1, character) && sprite1.is_visible && character.is_visible)||
+           (isCollision_lev3(sprite3, sprite2) && sprite3.is_visible && sprite2.is_visible) || (isCollision_lev3(character, sprite2) && character.is_visible && sprite2.is_visible) || (isCollision_lev3(sprite3, character) && sprite3.is_visible && character.is_visible) ){
+            return 0;
+        }
+        else{
+            return 1;
+        }
     }
 }
 
@@ -330,17 +341,18 @@ int testCollision1(Sprite sprite1, Sprite sprite2){
     int sprite2_newy = sprite2.y + sprite2.dy;
 
     if( (sprite1.is_visible && sprite2.is_visible) &&
-        ((((sprite1_newx >= sprite2_newx) &&
-    (sprite1_newx <= sprite2_newx + sprite2.width - 1))
+
+        ((((sprite1_newx >= sprite2_newx - 1) &&
+    (sprite1_newx <= sprite2_newx + sprite2.width + 1))
     &&
-    ((sprite1_newy >= sprite2_newy - sprite1.height + 1) &&
-    (sprite1_newy <= sprite2_newy + sprite2.height - 1)))
+    ((sprite1_newy >= sprite2_newy - sprite1.height - 1) &&
+    (sprite1_newy <= sprite2_newy + sprite2.height  + 1)))
     ||
     (((sprite2_newx >= sprite1_newx) &&
-    (sprite2_newx <= sprite1_newx + sprite1.width - 1))
+    (sprite2_newx <= sprite1_newx + sprite1.width + 1))
     &&
-    ((sprite2_newy >= sprite1_newy - sprite2.height + 1) &&
-    (sprite2_newy <= sprite1_newy + sprite1.height - 1))))){
+    ((sprite2_newy >= sprite1_newy - sprite2.height - 1) &&
+    (sprite2_newy <= sprite1_newy + sprite1.height + 1))))){
 
         return 1;
 
@@ -471,7 +483,7 @@ void init_all_sprites_level3(void){
     init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
     init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
     init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
-    init_sprite(&character, -20, 40, 8, 8, character_bm);
+    init_sprite(&character, 42, 40, 8, 8, character_bm);
 
     happy.dx = rand_dir();
     happy.dy = rand_dir();
@@ -503,7 +515,6 @@ void increment_all_level3(void){
 
         silly.x = silly.x + silly.dx;
         silly.y = silly.y + silly.dy;    
-    }
 }
 
 int colliding_x(Sprite sprite1, Sprite sprite2){
@@ -528,7 +539,6 @@ int colliding_y(Sprite sprite1, Sprite sprite2){
     }
 }
 
-//                                 HAPPY(M)        SILLY(S)
 void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
     int move_sprite;
     int stat_sprite;
@@ -776,18 +786,18 @@ void draw_all_sprites(void){
 }
 
 void redraw_level3(void){
-    int loopmax = 500;
+    int loopmax = 60;
     int loopcount = 0;
     int valid;
 
     if(!happy.is_visible){
         init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
         happy.is_visible = 0;
-        valid = check_valid_faces_level3(happy, angry, silly, character);
+        valid = check_valid_faces_level3(happy, angry, silly, character, 1);
 
         while(!valid && loopcount < loopmax){
             init_sprite(&happy, rand() % 67, (rand() % 22) + 10, 16, 16, happy_bm);
-            valid = check_valid_faces_level3(happy, angry, silly, character);
+            valid = check_valid_faces_level3(happy, angry, silly, character, 1);
             happy.is_visible = 0;
             loopcount++;
         }
@@ -808,12 +818,12 @@ void redraw_level3(void){
     if(!angry.is_visible){
         init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
         angry.is_visible = 0;
-        valid = check_valid_faces_level3(happy, angry, silly, character);
+        valid = check_valid_faces_level3(happy, angry, silly, character, 1);
 
         while(!valid && loopcount < loopmax){
             init_sprite(&angry, rand() % 67, (rand() % 22) + 10, 16, 16, angry_bm);
             angry.is_visible = 0;
-            valid = check_valid_faces_level3(happy, angry, silly, character);
+            valid = check_valid_faces_level3(happy, angry, silly, character, 1);
             loopcount++;
         }
         if(valid){
@@ -829,12 +839,12 @@ void redraw_level3(void){
     if(!silly.is_visible){
         init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
         silly.is_visible = 0;
-        valid = check_valid_faces_level3(happy, angry, silly, character);
+        valid = check_valid_faces_level3(happy, angry, silly, character, 1);
 
         while(!valid && loopcount < loopmax){
             init_sprite(&silly, rand() % 67, (rand() % 22) + 10, 16, 16, silly_bm);
             silly.is_visible = 0;
-            valid = check_valid_faces_level3(happy, angry, silly, character);
+            valid = check_valid_faces_level3(happy, angry, silly, character, 1);
             loopcount++;
         }
         if(valid){

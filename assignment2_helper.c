@@ -689,14 +689,14 @@ void interrupt_level12(void){
     switch(coll){
         case (1):
             if (happy.is_visible){
-                //score += 2;
+                score += 2;
             }
             happy.is_visible = 0;
             break;
 
         case (2):
             if (angry.is_visible){
-                //lives -= 1;
+                lives -= 1;
             }
             angry.is_visible = 0;
             break;
@@ -746,14 +746,14 @@ void interrupt_level3(void){
     switch(coll){
         case (1):
             if (happy.is_visible){
-                //score += 2;
+                score += 2;
             }
             happy.is_visible = 0;
             break;
 
         case (2):
             if (angry.is_visible){
-                //lives -= 1;
+                lives -= 1;
             }
             angry.is_visible = 0;
             break;

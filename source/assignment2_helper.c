@@ -143,22 +143,22 @@ void send_line(char* string) {
     usb_serial_putchar('\n');
 }
 
-void send_debug_string(char* string) {
-     // Send the debug preamble...
-     usb_serial_write("DBG: ", 5);
+// void send_debug_string(char* string) {
+//      // Send the debug preamble...
+//      usb_serial_write("DBG: ", 5);
 
-     // Send all of the characters in the string
-     unsigned char char_count = 0;
-     while (*string != '\0') {
-         usb_serial_putchar(*string);
-         string++;
-         char_count++;
-     }
+//      // Send all of the characters in the string
+//      unsigned char char_count = 0;
+//      while (*string != '\0') {
+//          usb_serial_putchar(*string);
+//          string++;
+//          char_count++;
+//      }
 
-     // Go to a new line (force this to be the start of the line)
-     usb_serial_putchar('\r');
-     usb_serial_putchar('\n');
-}
+//      // Go to a new line (force this to be the start of the line)
+//      usb_serial_putchar('\r');
+//      usb_serial_putchar('\n');
+// }
 
 void init_hardware(void){
     set_clock_speed(CPU_8MHz);
@@ -583,7 +583,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
     }
 
     else if (sprites[0].dy == 0 || sprites[1].dy == 0){
-        send_debug_string("one is up/down");
         if(sprites[0].dy == 0){
             move_sprite = 1;
             stat_sprite = 0;
@@ -594,7 +593,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
         }
 
         if(colliding_x(sprites[0], sprites[1])){
-            send_debug_string("colliding xs");
             directions[(move_sprite * 2) + 1] = sprites[move_sprite].dy * -1;
             directions[(move_sprite * 2)] = sprites[move_sprite].dx;
 
@@ -603,7 +601,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
         }
 
         else{
-            send_debug_string("not colliding xs");
             directions[stat_sprite * 2] = sprites[stat_sprite].dx * -1;
 
             directions[move_sprite * 2] = sprites[move_sprite].dx * -1;
@@ -629,7 +626,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
         }
 
         if(colliding_y(sprites[0], sprites[1])){
-            send_debug_string("colliding xs");
             directions[(move_sprite * 2) + 1] = sprites[move_sprite].dy;
             directions[(move_sprite * 2)] = sprites[move_sprite].dx * -1;
 
@@ -638,7 +634,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
         }
 
         else{
-            send_debug_string("not colliding ys");
             directions[stat_sprite * 2] = sprites[move_sprite].dx;
             directions[stat_sprite * 2 + 1] = sprites[stat_sprite].dy;
 
@@ -676,7 +671,6 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
 
 int testCollision3(Sprite sprite1, Sprite sprite2){
     if (testCollision1(sprite1, sprite2)){
-        send_debug_string("collision exists");
         sprite1.dx *= -1;
         sprite2.dx *= -1;
 
@@ -955,6 +949,10 @@ void interrupt_level12(void){
 }
 
 void interrupt_level3(void){
+    if(lives == 0 || score == 20){
+        continue_level = 0;
+        return;
+    }
     redraw_level3();
     level3_collisions();
     increment_all_level3();
@@ -999,8 +997,4 @@ void interrupt_level3(void){
     draw_all_sprites();
     draw_status(lives, score);
     show_screen();
-
-    if(lives == 0 || score == 20){
-        continue_level = 0;
-    }
 }

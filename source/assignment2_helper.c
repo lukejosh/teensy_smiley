@@ -12,60 +12,60 @@
 #include "assignment2_helper.h"
 
 unsigned char happy_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01011000, 0b00011010,
+    0b11111111, 0b11111111,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10011000, 0b00011001,
     0b10011000, 0b00011001,
     0b10000000, 0b00000001,
     0b10000000, 0b00000001,
     0b10010000, 0b00001001,
     0b10010000, 0b00001001,
     0b10001000, 0b00010001,
-    0b01000111, 0b11100010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
+    0b10000111, 0b11100001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b11111111, 0b11111111
 };
 
 unsigned char angry_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01000000, 0b00000010,
+    0b11111111, 0b11111111,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
     0b10001000, 0b00010001,
     0b10000100, 0b00100001,
     0b10000010, 0b01000001,
     0b10000000, 0b00000001,
     0b10000011, 0b11000001,
     0b10000100, 0b00100001,
-    0b01001000, 0b00010010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
+    0b10001000, 0b00010001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b11111111, 0b11111111
 };
 
 unsigned char silly_bm[32] = {
-    0b00000111, 0b11100000,
-    0b00011000, 0b00011000,
-    0b00100000, 0b00000100,
-    0b01000000, 0b00000010,
-    0b01000000, 0b00000010,
+    0b11111111, 0b11111110,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
     0b10011000, 0b00000001,
     0b10011000, 0b00000001,
     0b10000000, 0b00011001,
     0b10000000, 0b00011001,
     0b10000000, 0b00000001,
     0b10000011, 0b11110001,
-    0b01000000, 0b11000010,
-    0b01000000, 0b00000010,
-    0b00100000, 0b00000100,
-    0b00011000, 0b00011000,
-    0b00000111, 0b11100000
+    0b10000000, 0b11000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b10000000, 0b00000001,
+    0b11111111, 0b11111111
 };
 
 unsigned char character_bm[8] = {
@@ -178,7 +178,7 @@ void init_hardware(void){
 
 void init_timer1(){
     TCCR1B = (1 << WGM12);
-    OCR1A = 600;
+    OCR1A = 400;
     TIMSK1 = (1 << OCIE1A);
     TCCR1B |= (1 << CS12) | (1 << CS10);
 }
@@ -341,16 +341,16 @@ int testCollision1(Sprite sprite1, Sprite sprite2){
 
     if( (sprite1.is_visible && sprite2.is_visible) &&
         ((((sprite1_newx >= sprite2_newx) &&
-    (sprite1_newx <= sprite2_newx + sprite2.width))
+    (sprite1_newx <= sprite2_newx + sprite2.width - 1))
     &&
-    ((sprite1_newy >= sprite2_newy - sprite1.height) &&
-    (sprite1_newy <= sprite2_newy + sprite2.height)))
+    ((sprite1_newy >= sprite2_newy - sprite1.height + 1) &&
+    (sprite1_newy <= sprite2_newy + sprite2.height - 1)))
     ||
     (((sprite2_newx >= sprite1_newx) &&
-    (sprite2_newx <= sprite1_newx + sprite1.width))
+    (sprite2_newx <= sprite1_newx + sprite1.width - 1))
     &&
-    ((sprite2_newy >= sprite1_newy - sprite2.height) &&
-    (sprite2_newy <= sprite1_newy + sprite1.height))))){
+    ((sprite2_newy >= sprite1_newy - sprite2.height + 1) &&
+    (sprite2_newy <= sprite1_newy + sprite1.height - 1))))){
 
         return 1;
 
@@ -432,8 +432,15 @@ void init_level(int l){
 
 void end_level(void){
     turnoff_all_interrupts();
+    char *output;
+    if(score == 20){
+        output = "You win!!!";
+    }
+    else{
+        output = "Game over! :(";
+    }
     clear_screen();
-    draw_centred(10, "Game over! :(");
+    draw_centred(10, output);
     draw_centred(20, "Play again?");
     draw_string(0, 40, "Y");
     draw_string(75, 40, "N");
@@ -498,12 +505,32 @@ void init_all_sprites_level3(void){
 }
 
 void increment_all_level3(void){
-    happy.x = happy.x + happy.dx;
-    happy.y = happy.y + happy.dy;
-    angry.x = angry.x + angry.dx;
-    angry.y = angry.y + angry.dy;
-    silly.x = silly.x + silly.dx;
-    silly.y = silly.y + silly.dy;
+    if(happy.dx + happy.dy == 1){
+        happy.x = happy.x + happy.dx * 2;
+        happy.y = happy.y + happy.dy * 2;
+    }
+    else{
+        happy.x = happy.x + happy.dx;
+        happy.y = happy.y + happy.dy;    
+    }
+
+    if(angry.dx + angry.dy == 1){
+        angry.x = angry.x + angry.dx * 2;
+        angry.y = angry.y + angry.dy * 2;
+    }
+    else{
+        angry.x = angry.x + angry.dx;
+        angry.y = angry.y + angry.dy;    
+    }
+
+    if(silly.dx + silly.dy == 1){
+        silly.x = silly.x + silly.dx * 2;
+        silly.y = silly.y + silly.dy * 2;
+    }
+    else{
+        silly.x = silly.x + silly.dx;
+        silly.y = silly.y + silly.dy;    
+    }
 }
 
 int colliding_x(Sprite sprite1, Sprite sprite2){
@@ -516,6 +543,18 @@ int colliding_x(Sprite sprite1, Sprite sprite2){
         return 0;
     }
 }
+
+int colliding_y(Sprite sprite1, Sprite sprite2){
+    if (((sprite1.y > sprite2.y) && (sprite1.y < sprite2.y + sprite2.height))
+        ||
+        ((sprite2.y > sprite1.y) && (sprite2.y < sprite1.y + sprite1.height))){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
 //                                 HAPPY(M)        SILLY(S)
 void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
     int move_sprite;
@@ -544,7 +583,7 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
     }
 
     else if (sprites[0].dy == 0 || sprites[1].dy == 0){
-
+        send_debug_string("one is up/down");
         if(sprites[0].dy == 0){
             move_sprite = 1;
             stat_sprite = 0;
@@ -559,7 +598,7 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
             directions[(move_sprite * 2) + 1] = sprites[move_sprite].dy * -1;
             directions[(move_sprite * 2)] = sprites[move_sprite].dx;
 
-            directions[(stat_sprite * 2) + 1] = sprites[stat_sprite].dy * -1;
+            directions[(stat_sprite * 2) + 1] = sprites[move_sprite].dy * -1;
             directions[(stat_sprite * 2)] = sprites[stat_sprite].dx;
         }
 
@@ -568,14 +607,50 @@ void determine_new_direction(Sprite sprite1, Sprite sprite2, float *directions){
             directions[stat_sprite * 2] = sprites[stat_sprite].dx * -1;
 
             directions[move_sprite * 2] = sprites[move_sprite].dx * -1;
-            directions[move_sprite * 2 + 1] = sprites[move_sprite].dy * -1;
+            directions[move_sprite * 2 + 1] = sprites[move_sprite].dy;
 
-            if(sprites[move_sprite].y < sprites[stat_sprite].y){
+            if(sprites[move_sprite].y < sprites[stat_sprite].y - sprites[stat_sprite].height/2){
                 directions[stat_sprite * 2 + 1] = 1;
             }
             else{
                 directions[stat_sprite * 2 + 1] = -1;
             }
+        }
+    }
+
+    else if(sprites[0].dx == 0 || sprites[1].dx == 0){
+        if(sprites[0].dx == 0){
+            move_sprite = 1;
+            stat_sprite = 0;
+        }
+        else{
+            stat_sprite = 1;
+            move_sprite = 0; //happy
+        }
+
+        if(colliding_y(sprites[0], sprites[1])){
+            send_debug_string("colliding xs");
+            directions[(move_sprite * 2) + 1] = sprites[move_sprite].dy;
+            directions[(move_sprite * 2)] = sprites[move_sprite].dx * -1;
+
+            directions[(stat_sprite * 2) + 1] = sprites[move_sprite].dy;
+            directions[(stat_sprite * 2)] = sprites[move_sprite].dx;
+        }
+
+        else{
+            send_debug_string("not colliding ys");
+            directions[stat_sprite * 2] = sprites[move_sprite].dx;
+            directions[stat_sprite * 2 + 1] = sprites[stat_sprite].dy;
+
+            directions[move_sprite * 2] = sprites[move_sprite].dx;
+            directions[move_sprite * 2 + 1] = sprites[move_sprite].dy * -1;
+
+            // if(sprites[move_sprite].y < sprites[stat_sprite].y - sprites[stat_sprite].height/2){
+            //     directions[stat_sprite * 2 + 1] = 1;
+            // }
+            // else{
+            //     directions[stat_sprite * 2 + 1] = -1;
+            // }
         }
     }
 
@@ -734,7 +809,7 @@ void draw_all_sprites(void){
 }
 
 void redraw_level3(void){
-    int loopmax = 15;
+    int loopmax = 45;
     int loopcount = 0;
     int valid;
 

@@ -122,7 +122,6 @@ void startup(void){
     show_screen();
     wait_for_button1();
     clear_screen();
-    send_debug_string("startup finished");
 }
 
 void menu(void){
@@ -130,7 +129,6 @@ void menu(void){
     lives = 3;
     score = 20;
 
-    send_debug_string("menu starting");
     int selected = 0;
     draw_menu(cur_selected);
     show_screen();
@@ -147,11 +145,9 @@ void menu(void){
             show_screen();
         }
         else if(button == 1){
-            send_debug_string("load level");
             selected = 1;
         }
     }
-    send_debug_string("menu finished!");
     to_level(cur_selected);
 }
 
@@ -206,14 +202,12 @@ ISR(TIMER1_COMPA_vect){
 ISR(INT0_vect){ //right dpad
     //while(PINB & 0b00000001);
     if(character.x < 76){
-        send_debug_string("RIGHT");
         character.x+=2;
     }
 }
 
 ISR(PCINT0_vect){//left dpad
     if (PINB & 0b00000010){
-        send_debug_string("LEFT");
         //while(PINB & 0b00000010);
         if(character.x > 0){
             character.x-=2;

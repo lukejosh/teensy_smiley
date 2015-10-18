@@ -103,13 +103,11 @@ void draw_centred(unsigned char y, char* string) {
 void wait_for_button1(void){
     while(!(PINF & 0b01000000));
     while(PINF & 0b01000000);
-    send_debug_string("pressed 1!");
 }
 
 void wait_for_button2(void){
     while(!(PINF & 0b00100000));
     while(PINF & 0b00100000);
-    send_debug_string("pressed 2!");
 }
 
 int wait_for_any_button(void){
@@ -117,14 +115,12 @@ int wait_for_any_button(void){
 
     if(PINF & 0b01000000){
         while(PINF & 0b01000000);
-        send_debug_string("button 1!");
         _delay_ms(50);
         return 1;
     }
     else if(PINF & 0b00100000){;
         while(PINF & 0b00100000);
         _delay_ms(50);
-        send_debug_string("button 2!");
         return 2;
     }
 }
@@ -271,11 +267,9 @@ int check_valid_faces(Sprite sprite1, Sprite sprite2, Sprite sprite3){
         (sprite3_left + 5 >= sprite2_left && sprite3_left - 5 <= sprite2_right)||
         (sprite3_left + 5 >= sprite1_left && sprite3_left - 5 <= sprite1_right)
         ){
-        send_debug_string("not valid");
         return 0;
     }
     else{
-        send_debug_string("valid!");
         return 1;
     }
 }
@@ -312,11 +306,9 @@ int isCollision_lev3(Sprite sprite1, Sprite sprite2){
 int check_valid_faces_level3(Sprite sprite1, Sprite sprite2, Sprite sprite3, Sprite character){
     if(isCollision_lev3(sprite1, sprite2) == 1 || isCollision_lev3(sprite1, sprite3) == 1   || isCollision_lev3(sprite1, character) == 1||
        isCollision_lev3(sprite2, sprite3) == 1 || isCollision_lev3(sprite2, character) == 1 || isCollision_lev3(sprite3, character) == 1){
-        send_debug_string("invalid");
         return 0;
     }
     else{
-        send_debug_string("valid!");
         return 1;
     }
 }
